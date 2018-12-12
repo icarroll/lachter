@@ -1,0 +1,7 @@
+Reimplement Thud player
+* C++ because of abstraction limitations in C
+* use game state representation amenable to machine learning (cf Giraffe)
+* decouple UI from computer player
+* decouple each side's computer players from each other
+* allow "pondering" - thinking on opponent's turn
+
