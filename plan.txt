@@ -1,7 +1,33 @@
 Reimplement Thud player
-* C++ because of abstraction limitations in C
+* C++(11?) because of abstraction limitations in C
 * use game state representation amenable to machine learning (cf Giraffe)
 * decouple UI from computer player
 * decouple each side's computer players from each other
 * allow "pondering" - thinking on opponent's turn
+* use same code for interactive play, self play learning, subprocess
+* proper up-front testing (tdd, quickcheck-type properties, more?)
+* proper on-disk format for storing game data
+* cmake because cmake
 
+non-goals
+* do everything at once
+
+rough task order (TEST ALL THE THINGS)
+* game state representation
+* bulk move generation
+* incremental move generation (boost coroutine2?)
+* do move
+* undo move
+* minimal evaluator
+* mcts (do this first? less understood, more interesting)
+* some kind of game tree debugging tool thingy
+* UI of some sort
+* naive minimax
+* iterative deepening
+* zobrist hashing
+* ttable
+* game data serialization format
+* move ordering
+* alpha-beta pruning
+* search extension for sacrifice moves
+* mtd(f)
