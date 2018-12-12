@@ -3,11 +3,12 @@ Reimplement Thud player
 * use game state representation amenable to machine learning (cf Giraffe)
 * decouple UI from computer player
 * decouple each side's computer players from each other
+* enable easy comparison between differing versions of code/parameters
 * allow "pondering" - thinking on opponent's turn
 * use same code for interactive play, self play learning, subprocess
 * proper up-front testing (tdd, quickcheck-type properties, more?)
 * proper on-disk format for storing game data
-* cmake because cmake
+* build with cmake and ninja
 
 non-goals
 * do everything at once
@@ -29,5 +30,7 @@ rough task order (TEST ALL THE THINGS)
 * game data serialization format
 * move ordering
 * alpha-beta pruning
-* search extension for sacrifice moves
-* mtd(f)
+* search extension (eg for sacrifice moves)
+* mtd(f) (for help with ttable debugging)
+* fat evaluator
+* automatic tuning of fat evaluator
