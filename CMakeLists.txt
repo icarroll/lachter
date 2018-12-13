@@ -6,7 +6,8 @@ project (Lachter)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
 
-add_executable(lachter lachter.cc)
+#add_executable(lachter lachter.cc)
+add_library(lachter lachter.cc)
 
 #add_executable(test_lachter test_lachter.cc)
 #target_compile_options(test_lachter PRIVATE "-Dlest_FEATURE_AUTO_REGISTER=1")
