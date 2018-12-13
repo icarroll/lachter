@@ -2,15 +2,32 @@
 
 using namespace std;
 
+coord operator*(coord pos, int scalar) {
+    return (coord) {pos.x*scalar, pos.y*scalar};
+}
+
+coord operator*(int scalar, coord pos) {
+    return (coord) {pos.x*scalar, pos.y*scalar};
+}
+
+coord operator+(coord pos, coord delta) {
+    return (coord) {pos.x+delta.x, pos.y+delta.y};
+}
+
+coord operator-(coord pos, coord delta) {
+    return (coord) {pos.x-delta.x, pos.y-delta.y};
+}
+
 bool inbounds(coord pos) {
     return 0 <= pos.x && pos.x < SIZE && 0 <= pos.y && pos.y < SIZE;
 }
 
-bool gamestate::legal() {
+bool gamestate::valid() {
     boardmap occupied = blocks;
+    boardmap dwarfmap = {};
+    boardmap trollmap = {};
 
-    // all pieces at legal coords
-    // no pieces at same coords
+    // all pieces at unique legal coords
     int dwarfcount = 0;
     for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
         piecestate dwarf = dwarfs[ix];
@@ -19,6 +36,7 @@ bool gamestate::legal() {
         if (! inbounds(pos)) return false;
         if (occupied[pos.y][pos.x]) return false;
         occupied[pos.y][pos.x] = true;
+        dwarfmap[pos.y][pos.x] = true;
         dwarfcount += 1;
     }
 
@@ -30,6 +48,7 @@ bool gamestate::legal() {
         if (! inbounds(pos)) return false;
         if (occupied[pos.y][pos.x]) return false;
         occupied[pos.y][pos.x] = true;
+        trollmap[pos.y][pos.x] = true;
         trollcount += 1;
     }
 
@@ -44,9 +63,72 @@ bool gamestate::legal() {
             continue;
         }
         coord pos = dwarf.pos;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            coord delta = dirs[n];
+            int mobility = 0;
+            for (int dist=1 ; dist<SIZE ; dist+=1) {
+                coord check = pos + dist*delta;
+                if (! inbounds(check)) break;
+                else if (occupied[check.y][check.x]) break;
+                else mobility = dist;
+            }
+            dwarfmobility[ix][n] = mobility;
+        }
     }
 
-    // threat maps accurate
+    // TODO threat maps accurate
+    boardmap checkdwarfthreats = {};
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        piecestate dwarf = dwarfs[ix];
+        if (! dwarf.alive) continue;
+        coord pos = dwarf.pos;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            coord delta = dirs[n];
+            for (int dist=1 ; dist<SIZE ; dist+=1) {
+                coord check = pos - (dist-1)*delta;
+                coord attack = pos + dist*delta;
+                if (! inbounds(check)) break;
+                if (! inbounds(attack)) break;
+                if (! dwarfmap[check.y][check.x]) break;
+                if (occupied[attack.y][attack.x]) {
+                    if (trollmap[attack.y][attack.x]) {
+                        checkdwarfthreats[attack.y][attack.x] = true;
+                    }
+                    break;
+                }
+                checkdwarfthreats[attack.y][attack.x] = true;
+            }
+        }
+    }
+    if (checkdwarfthreats != dwarfthreats) return false;
+
+    boardmap checktrollthreats = {};
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        piecestate troll = trolls[ix];
+        if (! troll.alive) continue;
+        coord pos = troll.pos;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            coord delta = dirs[n];
+            for (int dist=1 ; dist<SIZE ; dist+=1) {
+                coord check = pos - (dist-1)*delta;
+                coord shoveto = pos + dist*delta;
+                if (! inbounds(check)) break;
+                if (! inbounds(shoveto)) break;
+                if (! trollmap[check.y][check.x]) break;
+                if (occupied[shoveto.y][shoveto.x]) break;
+                for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
+                    coord attack = shoveto + dirs[nn];
+                    if (! inbounds(attack)) continue;
+                    if (blocks[attack.y][attack.x]) continue;
+                    checktrollthreats[attack.y][attack.x] = true;
+                }
+            }
+        }
+    }
+    if (checktrollthreats != trollthreats) return false;
+
+    // no problems found
+    return true;
 }
 
 /*
