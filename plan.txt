@@ -1,14 +1,14 @@
 Reimplement Thud player
 * C++(11) because of abstraction limitations in C
-* use game state representation amenable to machine learning (cf Giraffe)
+✓ use game state representation amenable to machine learning (cf Giraffe)
 * decouple UI from computer player
 * decouple each side's computer players from each other
 * enable easy comparison between differing versions of code/parameters
 * allow "pondering" - thinking on opponent's turn
 * use same code for interactive play, self play learning, subprocess
 * proper up-front testing (tdd, quickcheck-type properties, more?)
-* proper on-disk format for storing game data
-* build with cmake and ninja
+* proper on-disk format for storing game data (likely sqlite)
+✓ build with cmake and ninja
 
 non-goals
 * do everything at once
