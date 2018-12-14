@@ -76,7 +76,7 @@ bool gamestate::valid() {
         }
     }
 
-    // TODO threat maps accurate
+    // threat maps accurate
     boardmap checkdwarfthreats = {};
     for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
         piecestate dwarf = dwarfs[ix];
@@ -126,6 +126,20 @@ bool gamestate::valid() {
         }
     }
     if (checktrollthreats != trollthreats) return false;
+
+    // piece inthreat accurate
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        piecestate dwarf = dwarfs[ix];
+        if (! dwarf.alive) continue;
+        coord pos = dwarf.pos;
+        if (dwarf.inthreat != trollthreats[pos.y][pos.x]) return false;
+    }
+    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
+        piecestate troll = trolls[ix];
+        if (! troll.alive) continue;
+        coord pos = troll.pos;
+        if (troll.inthreat != dwarfthreats[pos.y][pos.x]) return false;
+    }
 
     // no problems found
     return true;
