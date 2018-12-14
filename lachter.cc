@@ -43,22 +43,30 @@ boardmap operator||(boardmap left, boardmap right) {
     return result;
 }
 
-gamestate::gamestate() {
-    isdwarfturn = true;
-
+gamestate::gamestate() : isdwarfturn(true), numdwarfs(0), numtrolls(0) {
     for (int y=0 ; y<SIZE ; y+=1) {
         for (int x=0 ; x<SIZE ; x+=1) {
             if (dwarfstart[y][x]) {
+                //cout << "found a dwarf start" << endl;
                 dwarfs[numdwarfs] = piecestate(true, coord(x,y), false);
                 numdwarfs += 1;
             }
             else if (trollstart[y][x]) {
-                cout << "found a troll" << endl;
+                //cout << "found a troll start" << endl;
                 trolls[numtrolls] = piecestate(true, coord(x,y), false);
                 numtrolls += 1;
             }
         }
     }
+
+    /*
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        cout << "checking dwarf " << ix << " is " << (dwarfs[ix].alive ? "alive" : "dead") << " at " << dwarfs[ix].pos.x << "," << dwarfs[ix].pos.y << endl;
+    }
+    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
+        cout << "checking troll " << ix << " is " << (trolls[ix].alive ? "alive" : "dead") << " at " << trolls[ix].pos.x << "," << trolls[ix].pos.y << endl;
+    }
+    */
 
     calculate_maps();
     calculate_dwarfmobility();
@@ -181,12 +189,12 @@ bool gamestate::valid() {
         occupied[pos.y][pos.x] = true;
         checkdwarfmap[pos.y][pos.x] = true;
         dwarfcount += 1;
+        //cout << "counted a dwarf" << endl;
     }
     if (checkdwarfmap != dwarfmap) {cerr << "dwarfmap" << endl; return false;}
 
     int trollcount = 0;
     for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        cout << "checking troll " << ix << " is " << (trolls[ix].alive ? "alive" : "dead") << endl;
         piecestate troll = trolls[ix];
         if (! troll.alive) continue;
         coord pos = troll.pos;
@@ -195,7 +203,7 @@ bool gamestate::valid() {
         occupied[pos.y][pos.x] = true;
         checktrollmap[pos.y][pos.x] = true;
         trollcount += 1;
-        cout << "counted a troll" << endl;
+        //cout << "counted a troll" << endl;
     }
     if (checktrollmap != trollmap) {cerr << "trollmap" << endl; return false;}
 
