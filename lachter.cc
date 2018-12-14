@@ -99,7 +99,7 @@ void gamestate::calculate_dwarfmobility() {
             int mobility = 0;
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos + dist*delta;
-                if (! inbounds(check)) break;
+                if (! check.inbounds()) break;
                 else if (occupied[check.y][check.x]) break;
                 else mobility = dist;
             }
@@ -121,8 +121,8 @@ void gamestate::calculate_dwarfthreats() {
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos - (dist-1)*delta;
                 coord attack = pos + dist*delta;
-                if (! inbounds(check)) break;
-                if (! inbounds(attack)) break;
+                if (! check.inbounds()) break;
+                if (! attack.inbounds()) break;
                 if (! dwarfmap[check.y][check.x]) break;
                 if (occupied[attack.y][attack.x]) {
                     if (trollmap[attack.y][attack.x]) {
@@ -149,13 +149,13 @@ void gamestate::calculate_trollthreats() {
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos - (dist-1)*delta;
                 coord shoveto = pos + dist*delta;
-                if (! inbounds(check)) break;
-                if (! inbounds(shoveto)) break;
+                if (! check.inbounds()) break;
+                if (! shoveto.inbounds()) break;
                 if (! trollmap[check.y][check.x]) break;
                 if (occupied[shoveto.y][shoveto.x]) break;
                 for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
                     coord attack = shoveto + dirs[nn];
-                    if (! inbounds(attack)) continue;
+                    if (! attack.inbounds()) continue;
                     if (blocks[attack.y][attack.x]) continue;
                     trollthreats[attack.y][attack.x] = true;
                 }
