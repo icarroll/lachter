@@ -21,8 +21,8 @@ coord operator-(coord pos, coord delta) {
     return (coord) {pos.x-delta.x, pos.y-delta.y};
 }
 
-bool inbounds(coord pos) {
-    return 0 <= pos.x && pos.x < SIZE && 0 <= pos.y && pos.y < SIZE;
+bool coord::inbounds() {
+    return 0 <= x && x < SIZE && 0 <= y && y < SIZE;
 }
 
 piecestate::piecestate() : alive(false), pos(-1,-1), inthreat(false) {
@@ -176,7 +176,7 @@ bool gamestate::valid() {
         piecestate dwarf = dwarfs[ix];
         if (! dwarf.alive) continue;
         coord pos = dwarf.pos;
-        if (! inbounds(pos)) {cerr << "bounds" << endl; return false;}
+        if (! pos.inbounds()) {cerr << "bounds" << endl; return false;}
         if (occupied[pos.y][pos.x]) {cerr << "occupied" << endl; return false;}
         occupied[pos.y][pos.x] = true;
         checkdwarfmap[pos.y][pos.x] = true;
@@ -190,7 +190,7 @@ bool gamestate::valid() {
         piecestate troll = trolls[ix];
         if (! troll.alive) continue;
         coord pos = troll.pos;
-        if (! inbounds(pos)) {cerr << "bounds" << endl; return false;}
+        if (! pos.inbounds()) {cerr << "bounds" << endl; return false;}
         if (occupied[pos.y][pos.x]) {cerr << "occupied" << endl; return false;}
         occupied[pos.y][pos.x] = true;
         checktrollmap[pos.y][pos.x] = true;
@@ -216,7 +216,7 @@ bool gamestate::valid() {
             int mobility = 0;
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos + dist*delta;
-                if (! inbounds(check)) break;
+                if (! check.inbounds()) break;
                 else if (occupied[check.y][check.x]) break;
                 else mobility = dist;
             }
@@ -235,8 +235,8 @@ bool gamestate::valid() {
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos - (dist-1)*delta;
                 coord attack = pos + dist*delta;
-                if (! inbounds(check)) break;
-                if (! inbounds(attack)) break;
+                if (! check.inbounds()) break;
+                if (! attack.inbounds()) break;
                 if (! dwarfmap[check.y][check.x]) break;
                 if (occupied[attack.y][attack.x]) {
                     if (trollmap[attack.y][attack.x]) {
@@ -260,13 +260,13 @@ bool gamestate::valid() {
             for (int dist=1 ; dist<SIZE ; dist+=1) {
                 coord check = pos - (dist-1)*delta;
                 coord shoveto = pos + dist*delta;
-                if (! inbounds(check)) break;
-                if (! inbounds(shoveto)) break;
+                if (! check.inbounds()) break;
+                if (! shoveto.inbounds()) break;
                 if (! trollmap[check.y][check.x]) break;
                 if (occupied[shoveto.y][shoveto.x]) break;
                 for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
                     coord attack = shoveto + dirs[nn];
-                    if (! inbounds(attack)) continue;
+                    if (! attack.inbounds()) continue;
                     if (blocks[attack.y][attack.x]) continue;
                     checktrollthreats[attack.y][attack.x] = true;
                 }

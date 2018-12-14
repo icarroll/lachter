@@ -17,6 +17,8 @@ struct coord {
     friend coord operator*(int scalar, coord pos);
     friend coord operator+(coord pos, coord delta);
     friend coord operator-(coord pos, coord delta);
+
+    bool inbounds();
 };
 
 const int NUM_DIRS = 8;
