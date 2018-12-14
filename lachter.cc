@@ -32,6 +32,16 @@ piecestate::piecestate(bool newalive, coord newpos, bool newinthreat)
         : alive(newalive), pos(newpos), inthreat(newinthreat) {
 }
 
+uint8_t neighborbits(boardmap map, coord pos) {
+    uint8_t bits = 0;
+    for (int n=0 ; n<NUM_DIRS ; n+=1) {
+        coord neighbor = pos + dirs[n];
+        if (map[neighbor.y][neighbor.x]) bits |= 1 << n;
+    }
+
+    return bits;
+}
+
 boardmap operator||(boardmap left, boardmap right) {
     boardmap result = {};
     for (int y=0 ; y<SIZE ; y+=1) {
@@ -46,6 +56,18 @@ boardmap operator||(boardmap left, boardmap right) {
 gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto)
         : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
           capt(false), capts(0) {
+}
+
+gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
+                   bool newcapt)
+        : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
+          capt(newcapt), capts(0) {
+}
+
+gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
+                   bool newcapt, uint8_t newcapts)
+        : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
+          capt(false), capts(newcapts) {
 }
 
 gamestate::gamestate() : isdwarfturn(true), numdwarfs(0), numtrolls(0) {
@@ -319,6 +341,19 @@ vector<gamemove> gamestate::alldwarfmoves() {
         if (! dwarf.alive) continue;
         coord from = dwarf.pos;
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            for (int dist=1 ; dist<=SIZE ; dist+=1) {
+                coord check = from - (dist-1)*dirs[n];
+                coord to = from + dist*dirs[n];
+                if (! dwarfmap[check.y][check.x]) break;
+                if (blocks[to.y][to.x]) break;
+                if (dwarfmap[to.y][to.x]) break;
+                if (trollmap[to.y][to.x]) {
+                    gamemove move = gamemove(true, from, to, true);
+                    allmoves.push_back(move);
+                    break;
+                }
+            }
+
             for (int dist=1 ; dist<=dwarfmobility[ix][n] ; dist+=1) {
                 coord to = from + dist*dirs[n];
                 allmoves.push_back(gamemove(true, from, to));
@@ -337,11 +372,39 @@ vector<gamemove> gamestate::alltrollmoves() {
         if (! troll.alive) continue;
         coord from = troll.pos;
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            for (int dist=1 ; dist<=SIZE ; dist+=1) {
+                coord check = from - (dist-1)*dirs[n];
+                if (! trollmap[check.y][check.x]) break;
+                if (dist == 1) {
+                    // can't shove unless at least 2 trolls
+                    check = from - dist*dirs[n];
+                    if (! trollmap[check.y][check.x]) continue;
+                }
+                coord to = from + dist*dirs[n];
+                if (blocks[to.y][to.x]) break;
+                if (trollmap[to.y][to.x]) break;
+                if (dwarfmap[to.y][to.x]) break;
+
+                uint8_t capts = neighborbits(dwarfmap, to);
+                if (capts) {
+                    gamemove move = gamemove(false, from, to, true, capts);
+                    allmoves.push_back(move);
+                }
+            }
+
             coord to = from + dirs[n];
             if (! blocks[to.y][to.x]
              && ! trollmap[to.y][to.x]
              && ! dwarfmap[to.y][to.x]) {
                 allmoves.push_back(gamemove(false, from, to));
+                for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
+                    coord attack = to + dirs[nn];
+                    if (dwarfmap[attack.y][attack.x]) {
+                        uint8_t capts = (uint8_t) 1 << nn;
+                        gamemove move = gamemove(false, from, to, true, capts);
+                        allmoves.push_back(move);
+                    }
+                }
             }
         }
     }

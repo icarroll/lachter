@@ -15,10 +15,10 @@ non-goals
 
 rough task order (TEST ALL THE THINGS)
 ✓ game state representation
-* bulk move generation
-* incremental move generation (boost coroutine2?)
+✓ bulk move generation
 * do move
 * undo move
+* incremental move generation (boost coroutine2? no, too bulky)
 * minimal evaluator
 * mcts (do this first? less understood, more interesting)
 * some kind of game tree debugging tool thingy

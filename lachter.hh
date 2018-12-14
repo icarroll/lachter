@@ -39,6 +39,7 @@ const int SIZE = 15;
 
 typedef array<array<bool,SIZE>,SIZE> boardmap;
 
+uint8_t neighborbits(boardmap map, coord pos);
 boardmap operator||(boardmap left, boardmap right);
 
 const boardmap blocks = {(array<bool,SIZE>)
@@ -103,6 +104,9 @@ struct gamemove {
     uint8_t capts;
 
     gamemove(bool newisdwarfmove, coord newfrom, coord newto);
+    gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt);
+    gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt,
+             uint8_t newcapts);
 };
 
 const int MAX_DWARFS = 32;
