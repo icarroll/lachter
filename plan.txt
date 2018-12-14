@@ -34,3 +34,10 @@ rough task order (TEST ALL THE THINGS)
 * mtd(f) (for help with ttable debugging)
 * fat evaluator
 * automatic tuning of fat evaluator
+
+some ideas for simple learning
+* remember all game states for games actually played
+* also shallow re-search all non-taken moves from actual-play game states to ensure they are in the ttable written to disk
+* record how many times game states show up in actual-play games, with the average score at the end of the game, and how recently they appeared in actual-play
+* keep count of actual-play games, and age out states without recent plays
+* record game states in 8-fold symmetry

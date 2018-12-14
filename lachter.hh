@@ -101,6 +101,8 @@ struct gamemove {
     coord to;
     bool capt;
     uint8_t capts;
+
+    gamemove(bool newisdwarfmove, coord newfrom, coord newto);
 };
 
 const int MAX_DWARFS = 32;
@@ -125,5 +127,8 @@ struct gamestate {
     void calculate_trollthreats();
 
     bool valid();
-    //vector<gamemove> allmoves();
+
+    vector<gamemove> allmoves();
+    vector<gamemove> alldwarfmoves();
+    vector<gamemove> alltrollmoves();
 };
