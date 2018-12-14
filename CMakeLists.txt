@@ -9,10 +9,10 @@ set(CMAKE_BUILD_TYPE Debug)
 #add_executable(lachter lachter.cc)
 add_library(lachter lachter.cc)
 
-#add_executable(test_lachter test_lachter.cc)
+add_executable(test_lachter test_lachter.cc)
 #target_compile_options(test_lachter PRIVATE "-Dlest_FEATURE_AUTO_REGISTER=1")
 
-#enable_testing()
-#add_test(NAME test_lachter COMMAND test_lachter)
+enable_testing()
+add_test(NAME test_lachter COMMAND test_lachter)
 
-#target_link_libraries(test_lachter cppqc)
+target_link_libraries(test_lachter lachter)
