@@ -21,6 +21,14 @@ coord operator-(coord pos, coord delta) {
     return (coord) {pos.x-delta.x, pos.y-delta.y};
 }
 
+bool operator==(coord left, coord right) {
+    return left.x == right.x && left.y == right.y;
+}
+
+bool operator!=(coord left, coord right) {
+    return left.x != right.x || left.y != right.y;
+}
+
 bool coord::inbounds() {
     return 0 <= x && x < SIZE && 0 <= y && y < SIZE;
 }
@@ -68,6 +76,20 @@ gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
                    bool newcapt, uint8_t newcapts)
         : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
           capt(false), capts(newcapts) {
+}
+
+bool operator==(gamemove left, gamemove right) {
+    if (left.isdwarfmove != right.isdwarfmove) return false;
+    if (left.from != right.from) return false;
+    if (left.to != right.to) return false;
+    if (left.capt != right.capt) return false;
+    if (left.capts != right.capts) return false;
+
+    return true;
+}
+
+bool operator!=(gamemove left, gamemove right) {
+    return ! (left == right);
 }
 
 gamestate::gamestate() : isdwarfturn(true), numdwarfs(0), numtrolls(0) {
@@ -374,12 +396,9 @@ vector<gamemove> gamestate::alltrollmoves() {
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
             for (int dist=1 ; dist<=SIZE ; dist+=1) {
                 coord check = from - (dist-1)*dirs[n];
+                // can't shove unless at least 2 trolls
+                if (dist == 1) check = from - dist*dirs[n];
                 if (! trollmap[check.y][check.x]) break;
-                if (dist == 1) {
-                    // can't shove unless at least 2 trolls
-                    check = from - dist*dirs[n];
-                    if (! trollmap[check.y][check.x]) continue;
-                }
                 coord to = from + dist*dirs[n];
                 if (blocks[to.y][to.x]) break;
                 if (trollmap[to.y][to.x]) break;
@@ -410,4 +429,15 @@ vector<gamemove> gamestate::alltrollmoves() {
     }
 
     return allmoves;
+}
+
+bool gamestate::validmove(gamemove move) {
+    vector<gamemove> moves = allmoves();
+    for (gamemove checkmove : moves) {
+        if (move == checkmove) return true;
+    }
+    return false;
+}
+
+void gamestate::domove(gamemove move) {
 }

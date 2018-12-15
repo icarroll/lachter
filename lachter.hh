@@ -17,6 +17,8 @@ struct coord {
     friend coord operator*(int scalar, coord pos);
     friend coord operator+(coord pos, coord delta);
     friend coord operator-(coord pos, coord delta);
+    friend bool operator==(coord left, coord right);
+    friend bool operator!=(coord left, coord right);
 
     bool inbounds();
 };
@@ -107,6 +109,9 @@ struct gamemove {
     gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt);
     gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt,
              uint8_t newcapts);
+
+    friend bool operator==(gamemove left, gamemove right);
+    friend bool operator!=(gamemove left, gamemove right);
 };
 
 const int MAX_DWARFS = 32;
@@ -135,4 +140,7 @@ struct gamestate {
     vector<gamemove> allmoves();
     vector<gamemove> alldwarfmoves();
     vector<gamemove> alltrollmoves();
+
+    bool validmove(gamemove move);
+    void domove(gamemove move);
 };
