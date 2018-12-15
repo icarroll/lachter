@@ -143,4 +143,6 @@ struct gamestate {
 
     bool validmove(gamemove move);
     void domove(gamemove move);
+    void dodwarfmove(gamemove move);
+    void dotrollmove(gamemove move);
 };

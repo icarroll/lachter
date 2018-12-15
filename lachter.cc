@@ -165,6 +165,32 @@ void gamestate::calculate_dwarfmobility() {
     }
 }
 
+/*
+void gamestate::update_dwarfmobility(coord where) {
+    boardmap occupied = blocks || dwarfmap || trollmap;
+
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        piecestate dwarf = dwarfs[ix];
+        if (! dwarf.alive) {
+            dwarfmobility[ix] = {};
+            continue;
+        }
+        coord pos = dwarf.pos;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            coord delta = dirs[n];
+            int mobility = 0;
+            for (int dist=1 ; dist<SIZE ; dist+=1) {
+                coord check = pos + dist*delta;
+                if (! check.inbounds()) break;
+                else if (occupied[check.y][check.x]) break;
+                else mobility = dist;
+            }
+            dwarfmobility[ix][n] = mobility;
+        }
+    }
+}
+*/
+
 void gamestate::calculate_dwarfthreats() {
     boardmap occupied = blocks || dwarfmap || trollmap;
     dwarfthreats = {};
@@ -440,4 +466,74 @@ bool gamestate::validmove(gamemove move) {
 }
 
 void gamestate::domove(gamemove move) {
+    if (move.isdwarfmove) dodwarfmove(move);
+    else dotrollmove(move);
+}
+
+void gamestate::dodwarfmove(gamemove move) {
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        piecestate dwarf = dwarfs[ix];
+        if (! dwarf.alive) continue;
+        if (dwarf.pos == move.from) {
+            isdwarfturn = false;
+            dwarf.pos = move.to;
+            dwarfmap[move.from.y][move.from.x] = false;
+            dwarfmap[move.to.y][move.to.x] = true;
+            if (move.capt) {
+                for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
+                    piecestate troll = trolls[ix];
+                    if (! troll.alive) continue;
+                    if (troll.pos == move.to) {
+                        troll.alive = false;
+                        troll.pos = coord(-1,-1);
+                        trollmap[move.to.y][move.to.x] = false;
+                        numtrolls -= 1;
+                        break;
+                    }
+                }
+            }
+
+            calculate_dwarfmobility();
+            calculate_dwarfthreats();
+            calculate_trollthreats();
+
+            break;
+        }
+    }
+}
+
+void gamestate::dotrollmove(gamemove move) {
+    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
+        piecestate troll = trolls[ix];
+        if (! troll.alive) continue;
+        if (troll.pos == move.from) {
+            isdwarfturn = true;
+            troll.pos = move.to;
+            trollmap[move.from.y][move.from.x] = false;
+            trollmap[move.to.y][move.to.x] = true;
+            if (move.capt) {
+                for (int n=0 ; n<NUM_DIRS ; n+=1) {
+                    if (move.capts & (uint8_t(1) << n)) {
+                        coord attack = move.to + dirs[n];
+                        for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+                            piecestate dwarf = dwarfs[ix];
+                            if (! dwarf.alive) continue;
+                            if (dwarf.pos == attack) {
+                                dwarf.alive = false;
+                                dwarf.pos = coord(-1,-1);
+                                dwarfmap[attack.y][attack.x] = false;
+                                numdwarfs -= 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            calculate_dwarfmobility();
+            calculate_dwarfthreats();
+            calculate_trollthreats();
+
+            break;
+        }
+    }
 }

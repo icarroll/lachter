@@ -16,7 +16,7 @@ non-goals
 rough task order (TEST ALL THE THINGS)
 ✓ game state representation
 ✓ bulk move generation
-* do move
+✓ do move
 * undo move
 * incremental move generation (boost coroutine2? no, too bulky)
 * minimal evaluator
