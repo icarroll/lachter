@@ -11,11 +11,15 @@ set(CMAKE_CXX_FLAGS "-O3")
 
 #add_executable(lachter lachter.cc)
 add_library(lachter lachter.cc)
+add_library(mcts mcts.cc)
 
 add_executable(test_lachter test_lachter.cc)
+target_link_libraries(test_lachter lachter)
 #target_compile_options(test_lachter PRIVATE "-Dlest_FEATURE_AUTO_REGISTER=1")
+
+add_executable(test_mcts test_mcts.cc)
+target_link_libraries(test_mcts lachter mcts)
 
 enable_testing()
 add_test(NAME test_lachter COMMAND test_lachter)
-
-target_link_libraries(test_lachter lachter)
+add_test(NAME test_mcts COMMAND test_mcts)
