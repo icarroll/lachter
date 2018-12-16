@@ -119,6 +119,7 @@ const int MAX_TROLLS = 8;
 
 struct gamestate {
     bool isdwarfturn;
+    int sincecapt;
     array<piecestate,MAX_DWARFS> dwarfs;
     array<piecestate,MAX_TROLLS> trolls;
     int numdwarfs;
@@ -145,4 +146,9 @@ struct gamestate {
     void domove(gamemove move);
     void dodwarfmove(gamemove move);
     void dotrollmove(gamemove move);
+
+    bool gameover();
+
+    float final_score();
+    float heuristic();
 };

@@ -17,9 +17,9 @@ rough task order (TEST ALL THE THINGS)
 ✓ game state representation
 ✓ bulk move generation
 ✓ do move
+* minimal evaluator
 * undo move
 * incremental move generation (boost coroutine2? no, too bulky)
-* minimal evaluator
 * mcts (do this first? less understood, more interesting)
 * some kind of game tree debugging tool thingy
 * UI of some sort
