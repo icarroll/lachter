@@ -5,6 +5,9 @@ project (Lachter)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Release)
+
+set(CMAKE_CXX_FLAGS "-O3")
 
 #add_executable(lachter lachter.cc)
 add_library(lachter lachter.cc)
