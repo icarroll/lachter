@@ -3,10 +3,13 @@
 
 #include "lachter.hh"
 
+const int NTRIES = 100000;
+
 int main(int numargs, char * args[]) {
     mt19937 gen(time(NULL));
 
-    for (int tries=0 ; tries<100000 ; tries+=1) {
+    vector<float> scores = {};
+    for (int tries=0 ; tries<NTRIES ; tries+=1) {
         gamestate board;
         if (! board.valid()) return 1;
 
@@ -19,7 +22,24 @@ int main(int numargs, char * args[]) {
             board.domove(allmoves[ix]);
             if (! board.valid()) return 1;
         }
+        scores.push_back(board.final_score());
     }
+
+    float totalscore = 0;
+    for (int ix=0 ; ix<scores.size() ; ix+=1) totalscore += scores[ix];
+    float mean = totalscore / scores.size();
+
+    vector<float> sqerrs = {};
+    for (int ix=0 ; ix<scores.size() ; ix+=1) {
+        float err = scores[ix] - mean;
+        sqerrs.push_back(err * err);
+    }
+    float totalsqerr = 0;
+    for (int ix=0 ; ix<sqerrs.size() ; ix+=1) totalsqerr += sqerrs[ix];
+    float meansqerr = totalsqerr / sqerrs.size();
+
+    cout << "score mean = " << mean << endl;
+    cout << "score mean squared error = " << meansqerr << endl;
 
     return 0;
 }
