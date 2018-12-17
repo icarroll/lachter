@@ -3,7 +3,7 @@
 
 #include "lachter.hh"
 
-const int NTRIES = 10000;
+const int NTRIES = 1000;
 
 int main(int numargs, char * args[]) {
     mt19937 gen(time(NULL));
