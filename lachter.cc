@@ -211,14 +211,12 @@ void gamestate::calculate_dwarfthreats() {
     }
 }
 
-//TODO mark threats where no dwarfs?
 void gamestate::calculate_trollthreats() {
     trollthreats = {};
 
     for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        piecestate troll = trolls[ix];
-        if (! troll.alive) continue;
-        coord pos = troll.pos;
+        if (! trolls[ix].alive) continue;
+        coord pos = trolls[ix].pos;
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
             coord delta = dirs[n];
             for (int dist=1 ; dist<SIZE ; dist+=1) {
