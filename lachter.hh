@@ -23,6 +23,8 @@ struct coord {
     bool inbounds();
 };
 
+const coord NOWHERE(-1,-1);
+
 const int NUM_DIRS = 8;
 
 const array<coord,NUM_DIRS> dirs = {(coord){1,0},  {1,1},   {0,1},  {-1,1},
@@ -31,20 +33,46 @@ const array<coord,NUM_DIRS> dirs = {(coord){1,0},  {1,1},   {0,1},  {-1,1},
 struct piecestate {
     bool alive;
     coord pos;
-    bool inthreat;
 
     piecestate();
-    piecestate(bool newalive, coord newpos, bool newinthreat);
+    piecestate(coord newpos);
 };
 
 const int SIZE = 15;
 
-typedef array<array<bool,SIZE>,SIZE> boardmap;
+typedef array<array<int,SIZE>,SIZE> boardmap_array;
+
+struct boardmap {
+    boardmap_array data;
+
+    boardmap();
+
+    bool operator[](coord pos) const;
+
+    int & which(coord pos);
+
+    bool operator!=(boardmap & that);
+};
+
+const int NOBODY = -1;
+
+typedef array<array<bool,SIZE>,SIZE> boardflags_array;
+
+struct boardflags {
+    boardflags_array data;
+
+    boardflags();
+    boardflags(boardflags_array newdata);
+
+    bool & operator[](coord pos);
+    bool operator[](coord pos) const;
+
+    bool operator!=(boardflags & that);
+};
 
 uint8_t neighborbits(boardmap map, coord pos);
-boardmap operator||(boardmap left, boardmap right);
 
-const boardmap blocks = {(array<bool,SIZE>)
+const boardflags blocks({(array<bool,SIZE>)
         {1,1,1,1,1,0,0,0,0,0,1,1,1,1,1},
         {1,1,1,1,0,0,0,0,0,0,0,1,1,1,1},
         {1,1,1,0,0,0,0,0,0,0,0,0,1,1,1},
@@ -60,9 +88,9 @@ const boardmap blocks = {(array<bool,SIZE>)
         {1,1,1,0,0,0,0,0,0,0,0,0,1,1,1},
         {1,1,1,1,0,0,0,0,0,0,0,1,1,1,1},
         {1,1,1,1,1,0,0,0,0,0,1,1,1,1,1}
-};
+});
 
-const boardmap dwarfstart = {(array<bool,SIZE>)
+const boardflags dwarfstart({(array<bool,SIZE>)
         {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0},
         {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
         {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
@@ -78,9 +106,9 @@ const boardmap dwarfstart = {(array<bool,SIZE>)
         {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
         {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
         {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0}
-};
+});
 
-const boardmap trollstart = {(array<bool,SIZE>)
+const boardflags trollstart({(array<bool,SIZE>)
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -96,7 +124,7 @@ const boardmap trollstart = {(array<bool,SIZE>)
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-};
+});
 
 struct gamemove {
     bool isdwarfmove;
@@ -120,18 +148,20 @@ const int MAX_TROLLS = 8;
 struct gamestate {
     bool isdwarfturn;
     int sincecapt;
-    array<piecestate,MAX_DWARFS> dwarfs;
-    array<piecestate,MAX_TROLLS> trolls;
+
     int numdwarfs;
-    int numtrolls;
+    array<piecestate,MAX_DWARFS> dwarfs;
     boardmap dwarfmap;
-    boardmap trollmap;
     array<array<int,NUM_DIRS>,MAX_DWARFS> dwarfmobility;
-    boardmap dwarfthreats;
-    boardmap trollthreats;
+
+    int numtrolls;
+    array<piecestate,MAX_TROLLS> trolls;
+    boardmap trollmap;
+
+    boardflags dwarfthreats;
+    boardflags trollthreats;
 
     gamestate();
-    void calculate_maps();
     void calculate_dwarfmobility();
     void calculate_dwarfthreats();
     void calculate_trollthreats();
