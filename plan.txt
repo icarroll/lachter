@@ -41,3 +41,23 @@ some ideas for simple learning
 * record how many times game states show up in actual-play games, with the average score at the end of the game, and how recently they appeared in actual-play
 * keep count of actual-play games, and age out states without recent plays
 * record game states in 8-fold symmetry
+
+useful info to track and display
+* number of ttable entries used as-is
+* number of ttable entries refined
+* number of ttable entries created
+* number of positions search-extended
+* number of alpha cutoffs
+* number of beta cutoffs
+* some kind of data about positions searched at each depth?
+
+some ideas for smarter search
+* identify threats and form a circle around them
+* do a search only within that circle
+  * nothing moves in ("wish" moves could be considered in a future version)
+  * moves out are abstracted (direction + minimum distance)
+* if the circle is in balance (available moves get punished), then what?
+  * use as move ordering heuristic?
+  * ie, if a piece is threatened and an exit move ends the threat, search that
+* current threats are easy to find, search threat-deal-withs first?
+* "if I had a piece here, I could attack that" then search for usable piece
