@@ -211,6 +211,7 @@ void gamestate::calculate_dwarfthreats() {
     }
 }
 
+//TODO mark threats where no dwarfs?
 void gamestate::calculate_trollthreats() {
     trollthreats = {};
 
@@ -404,9 +405,8 @@ vector<gamemove> gamestate::alldwarfmoves() {
     vector<gamemove> allmoves = {};
 
     for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        piecestate dwarf = dwarfs[ix];
-        if (! dwarf.alive) continue;
-        coord from = dwarf.pos;
+        if (! dwarfs[ix].alive) continue;
+        coord from = dwarfs[ix].pos;
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
             for (int dist=1 ; dist<=SIZE ; dist+=1) {
                 coord check = from - (dist-1)*dirs[n];
@@ -505,16 +505,11 @@ void gamestate::dodwarfmove(gamemove move) {
             dwarfmap.which(move.to) = ix;
             if (move.capt) {
                 sincecapt = 0;
-                for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-                    if (! trolls[ix].alive) continue;
-                    if (trolls[ix].pos == move.to) {
-                        trolls[ix].alive = false;
-                        trolls[ix].pos = NOWHERE;
-                        trollmap.which(move.to) = NOBODY;
-                        numtrolls -= 1;
-                        break;
-                    }
-                }
+                int trollix = trollmap.which(move.to);
+                trolls[trollix].alive = false;
+                trolls[trollix].pos = NOWHERE;
+                trollmap.which(move.to) = NOBODY;
+                numtrolls -= 1;
             }
             else sincecapt += 1;
 
@@ -540,15 +535,11 @@ void gamestate::dotrollmove(gamemove move) {
                 for (int n=0 ; n<NUM_DIRS ; n+=1) {
                     if (move.capts & (uint8_t(1) << n)) {
                         coord attack = move.to + dirs[n];
-                        for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-                            if (! dwarfs[ix].alive) continue;
-                            if (dwarfs[ix].pos == attack) {
-                                dwarfs[ix].alive = false;
-                                dwarfs[ix].pos = NOWHERE;
-                                dwarfmap.which(attack) = NOBODY;
-                                numdwarfs -= 1;
-                            }
-                        }
+                        int dwarfix = dwarfmap.which(attack);
+                        dwarfs[dwarfix].alive = false;
+                        dwarfs[dwarfix].pos = NOWHERE;
+                        dwarfmap.which(attack) = NOBODY;
+                        numdwarfs -= 1;
                     }
                 }
             }
