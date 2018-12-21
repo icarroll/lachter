@@ -77,7 +77,7 @@ uint8_t neighborbits(boardmap map, coord pos) {
     uint8_t bits = 0;
     for (int n=0 ; n<NUM_DIRS ; n+=1) {
         coord neighbor = pos + dirs[n];
-        if (map[neighbor]) bits |= 1 << n;
+        if (neighbor.inbounds() && map[neighbor]) bits |= 1 << n;
     }
 
     return bits;
@@ -467,7 +467,7 @@ vector<gamemove> gamestate::alltrollmoves() {
                 allmoves.push_back(gamemove(false, from, to));
                 for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
                     coord attack = to + dirs[nn];
-                    if (dwarfmap[attack]) {
+                    if (attack.inbounds() && dwarfmap[attack]) {
                         uint8_t capts = (uint8_t) 1 << nn;
                         gamemove move = gamemove(false, from, to, true, capts);
                         allmoves.push_back(move);
