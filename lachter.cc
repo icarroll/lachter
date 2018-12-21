@@ -494,62 +494,54 @@ void gamestate::domove(gamemove move) {
 }
 
 void gamestate::dodwarfmove(gamemove move) {
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        if (! dwarfs[ix].alive) continue;
-        if (dwarfs[ix].pos == move.from) {
-            isdwarfturn = false;
-            dwarfs[ix].pos = move.to;
-            dwarfmap.which(move.from) = NOBODY;
-            dwarfmap.which(move.to) = ix;
-            if (move.capt) {
-                sincecapt = 0;
-                int trollix = trollmap.which(move.to);
-                trolls[trollix].alive = false;
-                trolls[trollix].pos = NOWHERE;
-                trollmap.which(move.to) = NOBODY;
-                numtrolls -= 1;
-            }
-            else sincecapt += 1;
+    int dwarfix = dwarfmap.which(move.from);
+    dwarfs[dwarfix].pos = move.to;
+    dwarfmap.which(move.from) = NOBODY;
+    dwarfmap.which(move.to) = dwarfix;
 
-            calculate_dwarfmobility();
-            calculate_dwarfthreats();
-            calculate_trollthreats();
-
-            break;
-        }
+    if (move.capt) {
+        sincecapt = 0;
+        int trollix = trollmap.which(move.to);
+        trolls[trollix].alive = false;
+        trolls[trollix].pos = NOWHERE;
+        trollmap.which(move.to) = NOBODY;
+        numtrolls -= 1;
     }
+    else sincecapt += 1;
+
+    isdwarfturn = false;
+
+    calculate_dwarfmobility();
+    calculate_dwarfthreats();
+    calculate_trollthreats();
 }
 
 void gamestate::dotrollmove(gamemove move) {
-    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        if (! trolls[ix].alive) continue;
-        if (trolls[ix].pos == move.from) {
-            isdwarfturn = true;
-            trolls[ix].pos = move.to;
-            trollmap.which(move.from) = NOBODY;
-            trollmap.which(move.to) = ix;
-            if (move.capt) {
-                sincecapt = 0;
-                for (int n=0 ; n<NUM_DIRS ; n+=1) {
-                    if (move.capts & (uint8_t(1) << n)) {
-                        coord attack = move.to + dirs[n];
-                        int dwarfix = dwarfmap.which(attack);
-                        dwarfs[dwarfix].alive = false;
-                        dwarfs[dwarfix].pos = NOWHERE;
-                        dwarfmap.which(attack) = NOBODY;
-                        numdwarfs -= 1;
-                    }
-                }
+    int trollix = trollmap.which(move.from);
+    trolls[trollix].pos = move.to;
+    trollmap.which(move.from) = NOBODY;
+    trollmap.which(move.to) = trollix;
+
+    if (move.capt) {
+        sincecapt = 0;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            if (move.capts & (uint8_t(1) << n)) {
+                coord attack = move.to + dirs[n];
+                int dwarfix = dwarfmap.which(attack);
+                dwarfs[dwarfix].alive = false;
+                dwarfs[dwarfix].pos = NOWHERE;
+                dwarfmap.which(attack) = NOBODY;
+                numdwarfs -= 1;
             }
-            else sincecapt += 1;
-
-            calculate_dwarfmobility();
-            calculate_dwarfthreats();
-            calculate_trollthreats();
-
-            break;
         }
     }
+    else sincecapt += 1;
+
+    isdwarfturn = true;
+
+    calculate_dwarfmobility();
+    calculate_dwarfthreats();
+    calculate_trollthreats();
 }
 
 bool gamestate::gameover() {
@@ -562,6 +554,6 @@ float gamestate::final_score() {
     return numtrolls * 4.0 - numdwarfs * 1.0;
 }
 
-float gamestate::heuristic() {
+float gamestate::heuristic_score() {
     return numtrolls * 4.0 - numdwarfs * 1.0;
 }

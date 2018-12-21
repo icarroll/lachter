@@ -180,5 +180,5 @@ struct gamestate {
     bool gameover();
 
     float final_score();
-    float heuristic();
+    float heuristic_score();
 };

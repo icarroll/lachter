@@ -17,6 +17,9 @@ add_executable(test_lachter test_lachter.cc)
 target_link_libraries(test_lachter lachter)
 #target_compile_options(test_lachter PRIVATE "-Dlest_FEATURE_AUTO_REGISTER=1")
 
+add_executable(test_randomgames test_randomgames.cc)
+target_link_libraries(test_randomgames lachter)
+
 add_executable(test_mcts test_mcts.cc)
 target_link_libraries(test_mcts lachter mcts)
 
