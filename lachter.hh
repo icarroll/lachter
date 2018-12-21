@@ -127,12 +127,13 @@ const boardflags trollstart({(array<bool,SIZE>)
 });
 
 struct gamemove {
-    bool isdwarfmove;
-    coord from;
-    coord to;
-    bool capt;
-    uint8_t capts;
+    bool isdwarfmove = false;
+    coord from = NOWHERE;
+    coord to = NOWHERE;
+    bool capt = false;
+    uint8_t capts = 0;
 
+    gamemove();
     gamemove(bool newisdwarfmove, coord newfrom, coord newto);
     gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt);
     gamemove(bool newisdwarfmove, coord newfrom, coord newto, bool newcapt,

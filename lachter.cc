@@ -83,15 +83,17 @@ uint8_t neighborbits(boardmap map, coord pos) {
     return bits;
 }
 
+gamemove::gamemove() {
+}
+
 gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto)
-        : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
-          capt(false), capts(0) {
+        : isdwarfmove(newisdwarfmove), from(newfrom), to(newto) {
 }
 
 gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
                    bool newcapt)
         : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
-          capt(newcapt), capts(0) {
+          capt(newcapt) {
 }
 
 gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
