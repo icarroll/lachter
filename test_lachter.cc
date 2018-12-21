@@ -6,6 +6,9 @@
 const int NTRIES = 1000;
 
 int main(int numargs, char * args[]) {
+    gamemove check(false, coord(6,5), coord(6,1), true, 0b11000000);
+    if (! check.capt) return 1;
+
     mt19937 gen(time(NULL));
 
     vector<float> scores = {};

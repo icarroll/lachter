@@ -97,7 +97,7 @@ gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
 gamemove::gamemove(bool newisdwarfmove, coord newfrom, coord newto,
                    bool newcapt, uint8_t newcapts)
         : isdwarfmove(newisdwarfmove), from(newfrom), to(newto),
-          capt(false), capts(newcapts) {
+          capt(newcapt), capts(newcapts) {
 }
 
 bool operator==(gamemove left, gamemove right) {
