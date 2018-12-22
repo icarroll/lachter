@@ -2,14 +2,19 @@
 
 #include <random>
 
+extern "C" {
+#include <time.h>
+}
+
 #include "lachter.hh"
 
-const float UCB1_C = 1.414;   // ~sqrt(2)
+//const double UCB1_C = 1.414;   // ~sqrt(2)
+const double UCB1_C = 1.0e-4; //TODO tune this by hill climbing
 
 struct mcts_node {
     gamemove move_to_here;
     gamestate state;
-    float win_total = 0.0;
+    double win_total = 0.0;
     int visits = 0;
     vector<gamemove> unexplored_moves;
     vector<mcts_node> children = {};
@@ -17,11 +22,13 @@ struct mcts_node {
     mcts_node(gamestate newstate);
     mcts_node(gamemove newmove, gamestate newstate);
 
-    float sel_exp_sim_backprop(mt19937 randgen);
-    float final_win();
-    float simulate();
-    float child_ucb(int ix);
+    double sel_exp_sim_backprop(mt19937 randgen);
+    double final_win();
+    double simulate();
+    double child_ucb(int ix);
 };
+
+const int STEPS = 1000;   // less than .1sec on a fast machine
 
 struct mcts_brain {
     mt19937 randgen;
@@ -30,5 +37,8 @@ struct mcts_brain {
     mcts_brain(gamestate newstate);
 
     void think_steps(int steps);
+    void think_seconds(double seconds);
     gamemove best_move();
 };
+
+double get_now();

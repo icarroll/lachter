@@ -29,6 +29,12 @@ bool operator!=(coord left, coord right) {
     return left.x != right.x || left.y != right.y;
 }
 
+const char COLS[] = "ABCDEFGHJKLMNOP";
+ostream & operator<<(ostream & out, const coord pos) {
+    out << COLS[pos.x] << pos.y+1;
+    return out;
+}
+
 bool coord::inbounds() {
     return 0 <= x && x < SIZE && 0 <= y && y < SIZE;
 }
@@ -114,6 +120,22 @@ bool operator==(gamemove left, gamemove right) {
 
 bool operator!=(gamemove left, gamemove right) {
     return ! (left == right);
+}
+
+ostream & operator<<(ostream & out, const gamemove move) {
+    out << (move.isdwarfmove ? 'd' : 'T') << ' ';
+    out << move.from << '-' << move.to;
+    if (move.capt) {
+        if (move.capts == 0) out << 'x' << move.to;
+        else for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            if (move.capts & (uint8_t(1) << n)) {
+                coord attack = move.to + dirs[n];
+                out << 'x' << attack;
+            }
+        }
+    }
+
+    return out;
 }
 
 gamestate::gamestate() : isdwarfturn(true), sincecapt(0),

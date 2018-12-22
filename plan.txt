@@ -18,7 +18,7 @@ rough task order (TEST ALL THE THINGS)
 ✓ bulk move generation
 ✓ do move
 ✓ minimal evaluator
-* mcts
+✓ mcts
 * undo move
 * incremental move generation (not boost coroutine2, too bulky)
 * some kind of game tree debugging tool thingy
@@ -61,3 +61,16 @@ some ideas for smarter search
   * ie, if a piece is threatened and an exit move ends the threat, search that
 * current threats are easy to find, search threat-deal-withs first?
 * "if I had a piece here, I could attack that" then search for usable piece
+
+HOW TO DO FOCUSED SEARCH (one way at least)
+* split dwarf move into two levels
+  * choose piece on board (either dwarf OR troll)
+  * choose from all dwarf moves that involve that piece
+    * captures of
+    * captures by
+    * threats from
+    * threats to
+* that way certain pieces can be identified as being more rewarding to search
+* and being able to choose a troll allows search to focus on evading/attacking
+* OPEN QUESTION: does the same win-tracking metric work in this case?
+  * would some other metric work better?

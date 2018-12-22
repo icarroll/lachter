@@ -20,6 +20,8 @@ struct coord {
     friend bool operator==(coord left, coord right);
     friend bool operator!=(coord left, coord right);
 
+    friend ostream & operator<<(ostream & out, const coord pos);
+
     bool inbounds();
 };
 
@@ -141,6 +143,8 @@ struct gamemove {
 
     friend bool operator==(gamemove left, gamemove right);
     friend bool operator!=(gamemove left, gamemove right);
+
+    friend ostream & operator<<(ostream & out, const gamemove move);
 };
 
 const int MAX_DWARFS = 32;
