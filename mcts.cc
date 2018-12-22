@@ -42,7 +42,9 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
         win_guess = newnode.simulate();
 
         children.back().visits += 1;
-        if (children.back().state.isdwarfturn) children.back().win_total += 1 - win_guess;
+        if (children.back().state.isdwarfturn) {
+            children.back().win_total += 1 - win_guess;
+        }
         else children.back().win_total += win_guess;
     }
     else {
@@ -88,6 +90,19 @@ double mcts_node::child_ucb(int ix) {
            + UCB1_C * sqrt(log(visits) / children[ix].visits);
 }
 
+mcts_node mcts_node::best_child() {
+    int bestvisits = 0;
+    int bestchild = -1;
+    for (int ix=0 ; ix<children.size() ; ix+=1) {
+        if (children[ix].visits > bestvisits) {
+            bestvisits = children[ix].visits;
+            bestchild = ix;
+        }
+    }
+
+    return children[bestchild];
+}
+
 mcts_brain::mcts_brain(gamestate newstate) : root(newstate) {
     randgen = mt19937(time(NULL));
 }
@@ -114,6 +129,19 @@ double get_now() {
     clock_gettime(CLOCK_REALTIME_COARSE, & raw_time);
 
     return (double) raw_time.tv_sec + (double) raw_time.tv_nsec * 1e-9;
+}
+
+mcts_node mcts_brain::best_child() {
+    int bestvisits = 0;
+    int bestchild = -1;
+    for (int ix=0 ; ix<root.children.size() ; ix+=1) {
+        if (root.children[ix].visits > bestvisits) {
+            bestvisits = root.children[ix].visits;
+            bestchild = ix;
+        }
+    }
+
+    return root.children[bestchild];
 }
 
 gamemove mcts_brain::best_move() {

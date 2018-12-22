@@ -9,7 +9,8 @@ extern "C" {
 #include "lachter.hh"
 
 //const double UCB1_C = 1.414;   // ~sqrt(2)
-const double UCB1_C = 1.0e-4; //TODO tune this by hill climbing
+//const double UCB1_C = 1.0e-4; //TODO tune this by hill climbing
+const double UCB1_C = 1.0e-5;
 
 struct mcts_node {
     gamemove move_to_here;
@@ -26,6 +27,8 @@ struct mcts_node {
     double final_win();
     double simulate();
     double child_ucb(int ix);
+
+    mcts_node best_child();
 };
 
 const int STEPS = 1000;   // less than .1sec on a fast machine
@@ -38,6 +41,7 @@ struct mcts_brain {
 
     void think_steps(int steps);
     void think_seconds(double seconds);
+    mcts_node best_child();
     gamemove best_move();
 };
 

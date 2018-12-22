@@ -24,11 +24,19 @@ int main(int numargs, char * args[]) {
             bestchild = ix;
         }
     }
-    gamemove move = brain.root.children[bestchild].move_to_here;
+    mcts_node best_child = brain.root.best_child();
+    gamemove move = best_child.move_to_here;
 
-    double win_total = brain.root.children[bestchild].win_total;
+    double win_total = best_child.win_total;
     cout << "chosen move: " << move << endl;
     cout << "move win_total: " << win_total << endl;
     cout << "move visits: " << bestvisits << endl;
     cout << "move win average: " << win_total / bestvisits << endl;
+
+    cout << "principal variation:" << endl;
+    mcts_node node = brain.root;
+    do {
+        node = node.best_child();
+        cout << node.move_to_here << endl;
+    } while (node.children.size() > 0);
 }
