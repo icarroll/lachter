@@ -574,10 +574,23 @@ bool gamestate::gameover() {
     return allcapt || sincecapt > 20 || captmade && sincecapt > 10;
 }
 
-float gamestate::final_score() {
+double gamestate::final_score() {
     return numtrolls * 4.0 - numdwarfs * 1.0;
 }
 
-float gamestate::heuristic_score() {
-    return numtrolls * 4.0 - numdwarfs * 1.0;
+double gamestate::heuristic_score() {
+    int dwarfthreaten = 0;
+    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
+        if (! trolls[ix].alive) continue;
+        if (dwarfthreats[trolls[ix].pos]) dwarfthreaten += 1;
+    }
+
+    int trollthreaten = 0;
+    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
+        if (! dwarfs[ix].alive) continue;
+        if (trollthreats[dwarfs[ix].pos]) trollthreaten += 1;
+    }
+
+    return numtrolls * 4.0 + trollthreaten * 0.1
+           - (numdwarfs * 1.0 + dwarfthreaten * 0.4);
 }

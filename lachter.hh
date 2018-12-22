@@ -7,6 +7,8 @@
 
 using namespace std;
 
+const int SIZE = 15;
+
 struct coord {
     int x;
     int y;
@@ -39,8 +41,6 @@ struct piecestate {
     piecestate();
     piecestate(coord newpos);
 };
-
-const int SIZE = 15;
 
 typedef array<array<int,SIZE>,SIZE> boardmap_array;
 
@@ -184,6 +184,6 @@ struct gamestate {
 
     bool gameover();
 
-    float final_score();
-    float heuristic_score();
+    double final_score();
+    double heuristic_score();
 };

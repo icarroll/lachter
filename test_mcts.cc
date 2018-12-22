@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <iostream>
 
 #include "mcts.hh"
@@ -24,19 +25,19 @@ int main(int numargs, char * args[]) {
             bestchild = ix;
         }
     }
-    mcts_node best_child = brain.root.best_child();
-    gamemove move = best_child.move_to_here;
+    mcts_node * best_child = brain.root.best_child();
+    gamemove move = best_child->move_to_here;
 
-    double win_total = best_child.win_total;
+    cout << fixed << setprecision(3);
     cout << "chosen move: " << move << endl;
-    cout << "move win_total: " << win_total << endl;
+    cout << "move win_total: " << best_child->win_total << endl;
     cout << "move visits: " << bestvisits << endl;
-    cout << "move win average: " << win_total / bestvisits << endl;
+    cout << "move win average: " << best_child->win_total / bestvisits << endl;
 
     cout << "principal variation:" << endl;
-    mcts_node node = brain.root;
+    mcts_node * node = & brain.root;
     do {
-        node = node.best_child();
-        cout << node.move_to_here << endl;
-    } while (node.children.size() > 0);
+        node = node->best_child();
+        cout << node->move_to_here << " : " << node->win_total << ',' << node->visits << endl;
+    } while (node->children.size() > 0);
 }

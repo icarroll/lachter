@@ -37,15 +37,10 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
         gamestate newstate = state;
         newstate.domove(move);
         mcts_node newnode(move, newstate);
-        children.push_back(newnode);
 
         win_guess = newnode.simulate();
 
-        children.back().visits += 1;
-        if (children.back().state.isdwarfturn) {
-            children.back().win_total += 1 - win_guess;
-        }
-        else children.back().win_total += win_guess;
+        children.push_back(newnode);
     }
     else {
         // non-leaf node -> select
@@ -82,7 +77,13 @@ double mcts_node::final_win() {
 
 double mcts_node::simulate() {
     // return value between 0.0 for pure dwarf win to 1.0 for pure troll win
-    return (state.heuristic_score() + MAX_DWARFS) / (2*MAX_DWARFS);
+    double win_guess = (state.heuristic_score() + MAX_DWARFS) / (2*MAX_DWARFS);
+
+    visits += 1;
+    if (state.isdwarfturn) win_total += 1 - win_guess;
+    else win_total += win_guess;
+
+    return win_guess;
 }
 
 double mcts_node::child_ucb(int ix) {
@@ -90,7 +91,7 @@ double mcts_node::child_ucb(int ix) {
            + UCB1_C * sqrt(log(visits) / children[ix].visits);
 }
 
-mcts_node mcts_node::best_child() {
+mcts_node * mcts_node::best_child() {
     int bestvisits = 0;
     int bestchild = -1;
     for (int ix=0 ; ix<children.size() ; ix+=1) {
@@ -100,7 +101,7 @@ mcts_node mcts_node::best_child() {
         }
     }
 
-    return children[bestchild];
+    return & children[bestchild];
 }
 
 mcts_brain::mcts_brain(gamestate newstate) : root(newstate) {
@@ -131,7 +132,7 @@ double get_now() {
     return (double) raw_time.tv_sec + (double) raw_time.tv_nsec * 1e-9;
 }
 
-mcts_node mcts_brain::best_child() {
+mcts_node * mcts_brain::best_child() {
     int bestvisits = 0;
     int bestchild = -1;
     for (int ix=0 ; ix<root.children.size() ; ix+=1) {
@@ -141,7 +142,7 @@ mcts_node mcts_brain::best_child() {
         }
     }
 
-    return root.children[bestchild];
+    return & root.children[bestchild];
 }
 
 gamemove mcts_brain::best_move() {
