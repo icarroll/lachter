@@ -2,6 +2,13 @@
 
 using namespace std;
 
+void warn(string msg) {
+    cerr << msg << endl;
+}
+
+coord::coord() : x(-1), y(-1) {
+}
+
 coord::coord(int newx, int newy) : x(newx), y(newy) {
 }
 
@@ -29,10 +36,23 @@ bool operator!=(coord left, coord right) {
     return left.x != right.x || left.y != right.y;
 }
 
-const char COLS[] = "ABCDEFGHJKLMNOP";
+const string COLS = "ABCDEFGHJKLMNOP";
 ostream & operator<<(ostream & out, const coord pos) {
     out << COLS[pos.x] << pos.y+1;
     return out;
+}
+
+istream & operator>>(istream & in, coord & pos) {
+    char col;
+    int row;
+    in >> col >> row;
+
+    int x = COLS.find(col);
+    int y = row-1;
+
+    pos = {x,y};
+
+    return in;
 }
 
 bool coord::inbounds() {
@@ -136,6 +156,26 @@ ostream & operator<<(ostream & out, const gamemove move) {
     }
 
     return out;
+}
+
+istream & operator>>(istream & in, gamemove & move) {
+    char whichside;
+    in >> ws >> whichside >> ws;
+    if (whichside == 'd') move.isdwarfmove = true;
+    else if (whichside == 'T') move.isdwarfmove = false;
+    else warn("bad move");
+
+    char dash;
+    in >> move.from >> ws >> dash >> ws >> move.to >> ws;
+    if (dash != '-') warn("bad move");
+
+    while (in.peek() == 'x') {
+        in.get();
+        coord attack;
+        in >> ws >> attack >> ws;
+    }
+
+    return in;
 }
 
 gamestate::gamestate() : isdwarfturn(true), sincecapt(0),
@@ -261,10 +301,6 @@ void gamestate::calculate_trollthreats() {
             }
         }
     }
-}
-
-void warn(string msg) {
-    cerr << msg << endl;
 }
 
 bool gamestate::valid() {
@@ -536,8 +572,8 @@ void gamestate::dodwarfmove(gamemove move) {
     isdwarfturn = false;
 
     calculate_dwarfmobility();
-    calculate_dwarfthreats();
-    calculate_trollthreats();
+    //calculate_dwarfthreats();
+    //calculate_trollthreats();
 }
 
 void gamestate::dotrollmove(gamemove move) {
@@ -564,8 +600,8 @@ void gamestate::dotrollmove(gamemove move) {
     isdwarfturn = true;
 
     calculate_dwarfmobility();
-    calculate_dwarfthreats();
-    calculate_trollthreats();
+    //calculate_dwarfthreats();
+    //calculate_trollthreats();
 }
 
 bool gamestate::gameover() {

@@ -9,7 +9,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_FLAGS "-O3")
 
-#add_executable(lachter lachter.cc)
 add_library(lachter lachter.cc)
 add_library(mcts mcts.cc)
 
@@ -22,6 +21,9 @@ target_link_libraries(test_randomgames lachter)
 
 add_executable(test_mcts test_mcts.cc)
 target_link_libraries(test_mcts lachter mcts)
+
+add_executable(play_dwarf_mcts play_dwarf_mcts.cc)
+target_link_libraries(play_dwarf_mcts lachter mcts)
 
 enable_testing()
 add_test(NAME test_lachter COMMAND test_lachter)

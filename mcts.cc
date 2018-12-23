@@ -28,8 +28,8 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
     double win_guess;
     if (! unexplored_moves.empty()) {
         // leaf node -> expand/simulate
-        uniform_int_distribution<> dis(0, unexplored_moves.size()-1);
-        int ix = dis(randgen);
+        uniform_int_distribution<> dist(0, unexplored_moves.size()-1);
+        int ix = dist(randgen);
         gamemove move = unexplored_moves[ix];
         //TODO swap and pop_back instead
         unexplored_moves.erase(unexplored_moves.begin()+ix);
@@ -38,7 +38,7 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
         newstate.domove(move);
         mcts_node newnode(move, newstate);
 
-        win_guess = newnode.simulate();
+        win_guess = newnode.simulate(randgen);
 
         children.push_back(newnode);
     }
@@ -63,8 +63,7 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
     }
 
     // backpropagate
-    if (state.isdwarfturn) win_total += 1 - win_guess;
-    else win_total += win_guess;
+    win_total += win_guess;
 
     cur_depth -= 1;
     return win_guess;
@@ -75,19 +74,35 @@ double mcts_node::final_win() {
     return (state.final_score() + MAX_DWARFS) / (2*MAX_DWARFS);
 }
 
-double mcts_node::simulate() {
+double mcts_node::simulate(mt19937 randgen) {
     // return value between 0.0 for pure dwarf win to 1.0 for pure troll win
-    double win_guess = (state.heuristic_score() + MAX_DWARFS) / (2*MAX_DWARFS);
+    //double win_guess = (state.heuristic_score() + MAX_DWARFS) / (2*MAX_DWARFS);
+    double win_guess = random_rollout(randgen);
 
     visits += 1;
-    if (state.isdwarfturn) win_total += 1 - win_guess;
-    else win_total += win_guess;
+    win_total += win_guess;
 
     return win_guess;
 }
 
+double mcts_node::random_rollout(mt19937 randgen) {
+    // return value between 0.0 for pure dwarf win to 1.0 for pure troll win
+    gamestate rollout_state = state;
+    while (! rollout_state.gameover()) {
+        vector<gamemove> allmoves = rollout_state.allmoves();
+        uniform_int_distribution<> dist(0, allmoves.size()-1);
+        int ix = dist(randgen);
+        rollout_state.domove(allmoves[ix]);
+    }
+
+    double score = (rollout_state.final_score() + MAX_DWARFS) / (2*MAX_DWARFS);
+    return score;
+}
+
 double mcts_node::child_ucb(int ix) {
-    return children[ix].win_total / children[ix].visits
+    double win_total = children[ix].win_total;
+    if (children[ix].move_to_here.isdwarfmove) win_total = 1 - win_total;
+    return win_total / children[ix].visits
            + UCB1_C * sqrt(log(visits) / children[ix].visits);
 }
 
@@ -156,4 +171,13 @@ gamemove mcts_brain::best_move() {
     }
 
     return root.children[bestchild].move_to_here;
+}
+
+void mcts_brain::do_move(gamemove move) {
+    for (int ix=0 ; ix<root.children.size() ; ix+=1) {
+        if (root.children[ix].move_to_here == move) {
+            root = root.children[ix];
+            break;
+        }
+    }
 }

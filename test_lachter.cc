@@ -9,7 +9,7 @@ int main(int numargs, char * args[]) {
     gamemove check(false, coord(6,5), coord(6,1), true, 0b11000000);
     if (! check.capt) return 1;
 
-    mt19937 gen(time(NULL));
+    mt19937 randgen(time(NULL));
 
     vector<float> scores = {};
     for (int tries=0 ; tries<NTRIES ; tries+=1) {
@@ -19,8 +19,8 @@ int main(int numargs, char * args[]) {
         vector<gamemove> played = {};
         while (! board.gameover()) {
             vector<gamemove> allmoves = board.allmoves();
-            uniform_int_distribution<> dis(0, allmoves.size()-1);
-            int ix = dis(gen);
+            uniform_int_distribution<> dist(0, allmoves.size()-1);
+            int ix = dist(randgen);
             played.push_back(allmoves[ix]);
             board.domove(allmoves[ix]);
             if (! board.valid()) return 1;

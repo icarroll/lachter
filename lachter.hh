@@ -13,6 +13,7 @@ struct coord {
     int x;
     int y;
 
+    coord();
     coord(int newx, int newy);
 
     friend coord operator*(coord pos, int scalar);
@@ -23,6 +24,7 @@ struct coord {
     friend bool operator!=(coord left, coord right);
 
     friend ostream & operator<<(ostream & out, const coord pos);
+    friend istream & operator>>(istream & in, coord & pos);
 
     bool inbounds();
 };
@@ -110,6 +112,26 @@ const boardflags dwarfstart({(array<bool,SIZE>)
         {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0}
 });
 
+/*
+const boardflags dwarfstart({(array<bool,SIZE>)
+        {0,0,0,0,0,0,1,0,1,1,0,0,0,0,0},
+        {0,0,0,0,1,0,1,0,0,0,1,0,0,0,0},
+        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
+        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
+        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
+        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
+        {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
+        {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0}
+});
+*/
+
 const boardflags trollstart({(array<bool,SIZE>)
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
         {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
@@ -145,6 +167,7 @@ struct gamemove {
     friend bool operator!=(gamemove left, gamemove right);
 
     friend ostream & operator<<(ostream & out, const gamemove move);
+    friend istream & operator>>(istream & in, gamemove & move);
 };
 
 const int MAX_DWARFS = 32;

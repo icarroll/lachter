@@ -10,8 +10,8 @@ extern "C" {
 
 //const double UCB1_C = 1.414;   // ~sqrt(2)
 //const double UCB1_C = 1.0e-4; //TODO tune this by hill climbing
-//const double UCB1_C = 2.0e-3;
-const double UCB1_C = 1.0e-6;
+const double UCB1_C = 2.0e-3;
+//const double UCB1_C = 1.0e-6;
 
 struct mcts_node {
     gamemove move_to_here;
@@ -26,7 +26,8 @@ struct mcts_node {
 
     double sel_exp_sim_backprop(mt19937 randgen);
     double final_win();
-    double simulate();
+    double simulate(mt19937 randgen);
+    double random_rollout(mt19937 randgen);
     double child_ucb(int ix);
 
     mcts_node * best_child();
@@ -44,6 +45,8 @@ struct mcts_brain {
     void think_seconds(double seconds);
     mcts_node * best_child();
     gamemove best_move();
+
+    void do_move(gamemove move);
 };
 
 double get_now();

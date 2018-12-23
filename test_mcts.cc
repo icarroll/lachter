@@ -9,7 +9,7 @@ int main(int numargs, char * args[]) {
     gamestate board;
     mcts_brain brain(board);
 
-    brain.think_seconds(30.0);
+    brain.think_seconds(60.0);
     cout << "max depth searched: " << max_depth << endl;
 
     for (int ix=0 ; ix<brain.root.children.size() ; ix+=1) {
@@ -38,6 +38,6 @@ int main(int numargs, char * args[]) {
     mcts_node * node = & brain.root;
     do {
         node = node->best_child();
-        cout << node->move_to_here << " : " << node->win_total << ',' << node->visits << endl;
+        cout << node->move_to_here << " : " << node->win_total << '/' << node->visits << '=' << (node->win_total / node->visits) << endl;
     } while (node->children.size() > 0);
 }
