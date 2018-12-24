@@ -572,8 +572,8 @@ void gamestate::dodwarfmove(gamemove move) {
     isdwarfturn = false;
 
     calculate_dwarfmobility();
-    //calculate_dwarfthreats();
-    //calculate_trollthreats();
+    calculate_dwarfthreats();
+    calculate_trollthreats();
 }
 
 void gamestate::dotrollmove(gamemove move) {
@@ -600,8 +600,8 @@ void gamestate::dotrollmove(gamemove move) {
     isdwarfturn = true;
 
     calculate_dwarfmobility();
-    //calculate_dwarfthreats();
-    //calculate_trollthreats();
+    calculate_dwarfthreats();
+    calculate_trollthreats();
 }
 
 bool gamestate::gameover() {
