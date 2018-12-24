@@ -25,6 +25,9 @@ target_link_libraries(test_mcts lachter mcts)
 add_executable(play_dwarf_mcts play_dwarf_mcts.cc)
 target_link_libraries(play_dwarf_mcts lachter mcts)
 
+add_executable(selfplay_mcts selfplay_mcts.cc)
+target_link_libraries(selfplay_mcts lachter mcts)
+
 enable_testing()
 add_test(NAME test_lachter COMMAND test_lachter)
 add_test(NAME test_mcts COMMAND test_mcts)

@@ -36,9 +36,9 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
 
         gamestate newstate = state;
         newstate.domove(move);
-        mcts_node newnode(move, newstate);
+        shared_ptr<mcts_node> newnode = make_shared<mcts_node>(move, newstate);
 
-        win_guess = newnode.simulate(randgen);
+        win_guess = newnode->simulate(randgen);
 
         children.push_back(newnode);
     }
@@ -59,7 +59,7 @@ double mcts_node::sel_exp_sim_backprop(mt19937 randgen) {
             raise(SIGSEGV);
         }
 
-        win_guess = children[bestchild].sel_exp_sim_backprop(randgen);
+        win_guess = children[bestchild]->sel_exp_sim_backprop(randgen);
     }
 
     // backpropagate
@@ -100,33 +100,34 @@ double mcts_node::random_rollout(mt19937 randgen) {
 }
 
 double mcts_node::child_ucb(int ix) {
-    double win_total = children[ix].win_total;
-    if (children[ix].move_to_here.isdwarfmove) win_total = 1 - win_total;
-    return win_total / children[ix].visits
-           + UCB1_C * sqrt(log(visits) / children[ix].visits);
+    double win_total = children[ix]->win_total;
+    if (children[ix]->move_to_here.isdwarfmove) win_total = 1 - win_total;
+    return win_total / children[ix]->visits
+           + UCB1_C * sqrt(log(visits) / children[ix]->visits);
 }
 
-mcts_node * mcts_node::best_child() {
+shared_ptr<mcts_node> mcts_node::best_child() {
     int bestvisits = 0;
     int bestchild = -1;
     for (int ix=0 ; ix<children.size() ; ix+=1) {
-        if (children[ix].visits > bestvisits) {
-            bestvisits = children[ix].visits;
+        if (children[ix]->visits > bestvisits) {
+            bestvisits = children[ix]->visits;
             bestchild = ix;
         }
     }
 
-    return & children[bestchild];
+    return children[bestchild];
 }
 
-mcts_brain::mcts_brain(gamestate newstate) : root(newstate) {
+mcts_brain::mcts_brain(gamestate newstate) {
+    root = make_shared<mcts_node>(newstate);
     randgen = mt19937(time(NULL));
 }
 
 void mcts_brain::think_steps(int steps) {
     cur_depth = 0;
     max_depth = 0;
-    for (int n=0 ; n<steps ; n+=1) root.sel_exp_sim_backprop(randgen);
+    for (int n=0 ; n<steps ; n+=1) root->sel_exp_sim_backprop(randgen);
 }
 
 void mcts_brain::think_seconds(double seconds) {
@@ -136,7 +137,7 @@ void mcts_brain::think_seconds(double seconds) {
     double start_time = get_now();
     double end_time = start_time + seconds;
     while (get_now() < end_time) {
-        for (int n=0 ; n<STEPS ; n+=1) root.sel_exp_sim_backprop(randgen);
+        for (int n=0 ; n<STEPS ; n+=1) root->sel_exp_sim_backprop(randgen);
     }
 }
 
@@ -147,37 +148,38 @@ double get_now() {
     return (double) raw_time.tv_sec + (double) raw_time.tv_nsec * 1e-9;
 }
 
-mcts_node * mcts_brain::best_child() {
+shared_ptr<mcts_node> mcts_brain::best_child() {
     int bestvisits = 0;
     int bestchild = -1;
-    for (int ix=0 ; ix<root.children.size() ; ix+=1) {
-        if (root.children[ix].visits > bestvisits) {
-            bestvisits = root.children[ix].visits;
+    for (int ix=0 ; ix<root->children.size() ; ix+=1) {
+        if (root->children[ix]->visits > bestvisits) {
+            bestvisits = root->children[ix]->visits;
             bestchild = ix;
         }
     }
 
-    return & root.children[bestchild];
+    return root->children[bestchild];
 }
 
 gamemove mcts_brain::best_move() {
     int bestvisits = 0;
     int bestchild = -1;
-    for (int ix=0 ; ix<root.children.size() ; ix+=1) {
-        if (root.children[ix].visits > bestvisits) {
-            bestvisits = root.children[ix].visits;
+    for (int ix=0 ; ix<root->children.size() ; ix+=1) {
+        if (root->children[ix]->visits > bestvisits) {
+            bestvisits = root->children[ix]->visits;
             bestchild = ix;
         }
     }
 
-    return root.children[bestchild].move_to_here;
+    return root->children[bestchild]->move_to_here;
 }
 
 void mcts_brain::do_move(gamemove move) {
-    for (int ix=0 ; ix<root.children.size() ; ix+=1) {
-        if (root.children[ix].move_to_here == move) {
-            root = root.children[ix];
-            break;
+    for (int ix=0 ; ix<root->children.size() ; ix+=1) {
+        if (root->children[ix]->move_to_here == move) {
+            root = root->children[ix];
+            return;
         }
     }
+    cerr << "can't find move" << endl;
 }

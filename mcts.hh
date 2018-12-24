@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <random>
 
 extern "C" {
@@ -19,7 +20,7 @@ struct mcts_node {
     double win_total = 0.0;
     int visits = 0;
     vector<gamemove> unexplored_moves;
-    vector<mcts_node> children = {};
+    vector<shared_ptr<mcts_node>> children = {};
 
     mcts_node(gamestate newstate);
     mcts_node(gamemove newmove, gamestate newstate);
@@ -30,20 +31,20 @@ struct mcts_node {
     double random_rollout(mt19937 randgen);
     double child_ucb(int ix);
 
-    mcts_node * best_child();
+    shared_ptr<mcts_node> best_child();
 };
 
 const int STEPS = 1000;   // less than .1sec on a fast machine
 
 struct mcts_brain {
     mt19937 randgen;
-    mcts_node root;
+    shared_ptr<mcts_node> root;
 
     mcts_brain(gamestate newstate);
 
     void think_steps(int steps);
     void think_seconds(double seconds);
-    mcts_node * best_child();
+    shared_ptr<mcts_node> best_child();
     gamemove best_move();
 
     void do_move(gamemove move);

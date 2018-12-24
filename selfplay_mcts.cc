@@ -13,10 +13,5 @@ int main(int numargs, char * args[]) {
         gamemove move = brain.best_move();
         cout << move << endl;
         brain.do_move(move);
-
-        gamemove yourmove;
-        do cin >> yourmove;
-        while (! brain.root->state.validmove(yourmove));
-        brain.do_move(yourmove);
     }
 }
