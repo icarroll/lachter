@@ -74,3 +74,17 @@ HOW TO DO FOCUSED SEARCH (one way at least)
 * and being able to choose a troll allows search to focus on evading/attacking
 * OPEN QUESTION: does the same win-tracking metric work in this case?
   * would some other metric work better?
+
+thoughts about heuristic
+* capture the notion of counterthreat
+  * my dwarf is threatened by your troll
+  * but if you take my dwarf, I take your troll and you're behind on points
+* needs to give guidance when alternate paths are tactically equivalent
+  * such as opening moves
+  * such as must lose one of multiple pieces, which one escapes
+
+thoughts about variable depth search
+* if heuristic shows no change, reduce depth
+* if heuristic shows change, keep depth
+* if sacrifice move being considered, increase depth
+* what is null move search depth reduction?
