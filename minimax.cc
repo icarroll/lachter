@@ -12,6 +12,7 @@ double minimax_brain::minimax(gamestate node, int depth, bool top) {
     if (depth == 0) return node.heuristic_score();
 
     vector<gamemove> moves = node.allmoves();
+    vector<gamemove> newbestmoves = {};
 
     int value = node.isdwarfturn ? INT_MAX : INT_MIN;
     for (gamemove move : moves) {
@@ -19,22 +20,23 @@ double minimax_brain::minimax(gamestate node, int depth, bool top) {
         newnode.domove(move);
         int newvalue = minimax(newnode, depth-1);
         if (top && newvalue == value) {
-            bestmoves.push_back(move);
+            newbestmoves.push_back(move);
         }
         else if (node.isdwarfturn) {
             if (newvalue < value) {
                 value = newvalue;
-                if (top) bestmoves = {move};
+                if (top) newbestmoves = {move};
             }
         }
         else {
             if (newvalue > value) {
                 value = newvalue;
-                if (top) bestmoves = {move};
+                if (top) newbestmoves = {move};
             }
         }
     }
 
+    if (top) bestmoves = newbestmoves;
     return value;
 }
 
