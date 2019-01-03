@@ -9,7 +9,9 @@ int main(int numargs, char * args[]) {
     gamestate board;
     rollout2_brain brain(board);
 
+    cout << "starting think" << endl;
     brain.think_seconds(0.1);
+    cout << "thinking done" << endl;
     gamemove move = brain.best_move();
     brain.do_move(move);
 

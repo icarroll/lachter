@@ -194,20 +194,42 @@ istream & operator>>(istream & in, gamemove & move) {
     return in;
 }
 
+zobrist_hashes gamestate::gen_hashes() {
+    mt19937_64 randgen = mt19937_64(0xfedcba9876543210ULL);
+    uniform_int_distribution<uint64_t> dist(0,numeric_limits<uint64_t>::max());
+
+    zobrist_hashes hs;
+    hs.turn = dist(randgen);
+    for (int y=0 ; y<SIZE ; y+=1) {
+        for (int x=0 ; x<SIZE ; x+=1) {
+            hs.dwarfs[y][x] = dist(randgen);
+            hs.trolls[y][x] = dist(randgen);
+        }
+    }
+
+    return hs;
+}
+
+zobrist_hashes gamestate::hashes = gen_hashes();
+
 gamestate::gamestate() : isdwarfturn(true), sincecapt(0),
                          numdwarfs(0), dwarfmap(),
                          numtrolls(0), trollmap() {
+    hash = 0;
+
     for (int y=0 ; y<SIZE ; y+=1) {
         for (int x=0 ; x<SIZE ; x+=1) {
             coord pos(x,y);
             if (dwarfstart[pos]) {
                 dwarfs[numdwarfs] = piecestate(pos);
                 dwarfmap.which(pos) = numdwarfs;
+                hash ^= hashes.dwarfs[pos.y][pos.x];
                 numdwarfs += 1;
             }
             else if (trollstart[pos]) {
                 trolls[numtrolls] = piecestate(pos);
                 trollmap.which(pos) = numtrolls;
+                hash ^= hashes.trolls[pos.y][pos.x];
                 numtrolls += 1;
             }
         }
@@ -319,10 +341,14 @@ void gamestate::calculate_trollthreats() {
     }
 }
 
+//TODO check hash validity
 bool gamestate::valid() {
     boardflags occupied = blocks;
     boardmap checkdwarfmap = {};
     boardmap checktrollmap = {};
+    uint64_t checkhash = 0;
+
+    if (! isdwarfturn) checkhash ^= hashes.turn;
 
     // all pieces at unique legal coords
     int dwarfcount = 0;
@@ -334,6 +360,7 @@ bool gamestate::valid() {
         if (occupied[pos]) {warn("occupied"); return false;}
         occupied[pos] = true;
         checkdwarfmap.which(pos) = ix;
+        checkhash ^= hashes.dwarfs[pos.y][pos.x];
         dwarfcount += 1;
         //cout << "counted a dwarf" << endl;
     }
@@ -363,6 +390,7 @@ bool gamestate::valid() {
         if (occupied[pos]) {warn("occupied"); return false;}
         occupied[pos] = true;
         checktrollmap.which(pos) = ix;
+        checkhash ^= hashes.trolls[pos.y][pos.x];
         trollcount += 1;
         //cout << "counted a troll" << endl;
     }
@@ -382,6 +410,8 @@ bool gamestate::valid() {
         }
     }
     */
+
+    if (checkhash != hash) {warn("hash"); return false;}
 
     // piece counts accurate
     if (dwarfcount != numdwarfs) {warn("dwarfcount"); return false;}
@@ -573,7 +603,9 @@ void gamestate::dodwarfmove(gamemove move) {
     int dwarfix = dwarfmap.which(move.from);
     dwarfs[dwarfix].pos = move.to;
     dwarfmap.which(move.from) = NOBODY;
+    hash ^= hashes.dwarfs[move.from.y][move.from.x];
     dwarfmap.which(move.to) = dwarfix;
+    hash ^= hashes.dwarfs[move.to.y][move.to.x];
 
     if (move.capt) {
         sincecapt = 0;
@@ -581,11 +613,13 @@ void gamestate::dodwarfmove(gamemove move) {
         trolls[trollix].alive = false;
         trolls[trollix].pos = NOWHERE;
         trollmap.which(move.to) = NOBODY;
+        hash ^= hashes.trolls[move.to.y][move.to.x];
         numtrolls -= 1;
     }
     else sincecapt += 1;
 
     isdwarfturn = false;
+    hash ^= hashes.turn;
 
     calculate_dwarfmobility();
     calculate_dwarfthreats();
@@ -596,7 +630,9 @@ void gamestate::dotrollmove(gamemove move) {
     int trollix = trollmap.which(move.from);
     trolls[trollix].pos = move.to;
     trollmap.which(move.from) = NOBODY;
+    hash ^= hashes.trolls[move.from.y][move.from.x];
     trollmap.which(move.to) = trollix;
+    hash ^= hashes.trolls[move.to.y][move.to.x];
 
     if (move.capt) {
         sincecapt = 0;
@@ -607,6 +643,7 @@ void gamestate::dotrollmove(gamemove move) {
                 dwarfs[dwarfix].alive = false;
                 dwarfs[dwarfix].pos = NOWHERE;
                 dwarfmap.which(attack) = NOBODY;
+                hash ^= hashes.dwarfs[attack.y][attack.x];
                 numdwarfs -= 1;
             }
         }
@@ -614,6 +651,7 @@ void gamestate::dotrollmove(gamemove move) {
     else sincecapt += 1;
 
     isdwarfturn = true;
+    hash ^= hashes.turn;
 
     calculate_dwarfmobility();
     calculate_dwarfthreats();

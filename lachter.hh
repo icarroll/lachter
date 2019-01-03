@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <iostream>
+#include <random>
 #include <vector>
 
 using namespace std;
@@ -175,6 +176,13 @@ struct gamemove {
 const int MAX_DWARFS = 32;
 const int MAX_TROLLS = 8;
 
+typedef array<array<uint64_t,SIZE>,SIZE> boardhash_array;
+struct zobrist_hashes {
+    uint64_t turn;
+    boardhash_array dwarfs;
+    boardhash_array trolls;
+};
+
 struct gamestate {
     bool isdwarfturn;
     int sincecapt;
@@ -190,6 +198,11 @@ struct gamestate {
 
     boardflags dwarfthreats;
     boardflags trollthreats;
+
+    uint64_t hash;
+
+    static zobrist_hashes hashes;
+    static zobrist_hashes gen_hashes();
 
     gamestate();
     void calculate_dwarfmobility();
