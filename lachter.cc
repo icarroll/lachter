@@ -36,6 +36,12 @@ bool operator!=(coord left, coord right) {
     return left.x != right.x || left.y != right.y;
 }
 
+bool operator<(coord left, coord right) {
+    if (left.x >= right.x) return false;
+    if (left.y >= right.y) return false;
+    return true;
+}
+
 const string COLS = "ABCDEFGHJKLMNOP";
 ostream & operator<<(ostream & out, const coord pos) {
     out << COLS[pos.x] << pos.y+1;
@@ -140,6 +146,16 @@ bool operator==(gamemove left, gamemove right) {
 
 bool operator!=(gamemove left, gamemove right) {
     return ! (left == right);
+}
+
+bool operator<(gamemove left, gamemove right) {
+    if (left.isdwarfmove >= right.isdwarfmove) return false;
+    if (! (left.from < right.from)) return false;
+    if (! (left.to < right.to)) return false;
+    if (left.capt >= right.capt) return false;
+    if (left.capts >= right.capts) return false;
+
+    return true;
 }
 
 ostream & operator<<(ostream & out, const gamemove move) {
@@ -602,6 +618,12 @@ void gamestate::dotrollmove(gamemove move) {
     calculate_dwarfmobility();
     calculate_dwarfthreats();
     calculate_trollthreats();
+}
+
+gamestate gamestate::child(gamemove move) {
+    gamestate newstate = * this;
+    newstate.domove(move);
+    return newstate;
 }
 
 bool gamestate::gameover() {

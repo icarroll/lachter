@@ -22,6 +22,7 @@ struct coord {
     friend coord operator-(coord pos, coord delta);
     friend bool operator==(coord left, coord right);
     friend bool operator!=(coord left, coord right);
+    friend bool operator<(coord left, coord right);
 
     friend ostream & operator<<(ostream & out, const coord pos);
     friend istream & operator>>(istream & in, coord & pos);
@@ -165,6 +166,7 @@ struct gamemove {
 
     friend bool operator==(gamemove left, gamemove right);
     friend bool operator!=(gamemove left, gamemove right);
+    friend bool operator<(gamemove left, gamemove right);
 
     friend ostream & operator<<(ostream & out, const gamemove move);
     friend istream & operator>>(istream & in, gamemove & move);
@@ -204,6 +206,8 @@ struct gamestate {
     void domove(gamemove move);
     void dodwarfmove(gamemove move);
     void dotrollmove(gamemove move);
+
+    gamestate child(gamemove move);
 
     bool gameover();
 
