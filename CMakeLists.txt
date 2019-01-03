@@ -9,35 +9,35 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_FLAGS "-O3")
 
-add_library(lachter lachter.cc)
+add_library(thud1 thud1.cc)
 add_library(mcts mcts.cc)
 add_library(minimax minimax.cc)
 add_library(rollout2 rollout2.cc)
 
-add_executable(test_lachter test_lachter.cc)
-target_link_libraries(test_lachter lachter)
+add_executable(test_thud1 test_thud1.cc)
+target_link_libraries(test_thud1 thud1)
 #target_compile_options(test_lachter PRIVATE "-Dlest_FEATURE_AUTO_REGISTER=1")
 
 add_executable(test_randomgames test_randomgames.cc)
-target_link_libraries(test_randomgames lachter)
+target_link_libraries(test_randomgames thud1)
 
 add_executable(test_mcts test_mcts.cc)
-target_link_libraries(test_mcts lachter mcts)
+target_link_libraries(test_mcts thud1 mcts)
 
 add_executable(test_minimax test_minimax.cc)
-target_link_libraries(test_minimax lachter minimax)
+target_link_libraries(test_minimax thud1 minimax)
 
 add_executable(test_rollout2 test_rollout2.cc)
-target_link_libraries(test_rollout2 lachter rollout2)
+target_link_libraries(test_rollout2 thud1 rollout2)
 
 add_executable(play_dwarf_mcts play_dwarf_mcts.cc)
-target_link_libraries(play_dwarf_mcts lachter mcts)
+target_link_libraries(play_dwarf_mcts thud1 mcts)
 
 add_executable(selfplay_mcts selfplay_mcts.cc)
-target_link_libraries(selfplay_mcts lachter mcts)
+target_link_libraries(selfplay_mcts thud1 mcts)
 
 enable_testing()
-add_test(NAME test_lachter COMMAND test_lachter)
+add_test(NAME test_thud1 COMMAND test_thud1)
 add_test(NAME test_mcts COMMAND test_mcts)
 add_test(NAME test_rollout2 COMMAND test_rollout2)
 add_test(NAME test_minimax COMMAND test_minimax)

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 
-#include "lachter.hh"
+#include "thud1.hh"
 
 const int NTRIES = 1000;
 
