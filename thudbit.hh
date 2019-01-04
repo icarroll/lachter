@@ -69,8 +69,8 @@ struct bitref {
 
     operator bool() const;
     bitref & operator=(bool newbit);
-    bitref & operator=(const bitref & newbit);
-    bool operator~() const;
+    //bitref & operator=(const bitref & newbit);
+    //bool operator~() const;
 };
 
 using bitboard_array = array<uint16_t,SIZE>;

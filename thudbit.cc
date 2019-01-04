@@ -76,10 +76,16 @@ bitref::operator bool() const {
 bitref & bitref::operator=(bool newbit) {
     if (newbit) * bitline |= LEFT_COLUMN_BIT >> whichbit;
     else * bitline &= ~(LEFT_COLUMN_BIT >> whichbit);
+
+    return * this;
 }
 
 /*
 bitref & bitref::operator=(const bitref & newbit) {
+    //TODO
+}
+
+bool bitref::operator~() const {
     //TODO
 }
 */
