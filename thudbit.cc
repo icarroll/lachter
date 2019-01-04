@@ -65,51 +65,44 @@ bool coord::inbounds() {
     return 0 <= x && x < SIZE && 0 <= y && y < SIZE;
 }
 
-piecestate::piecestate() : alive(false), pos(NOWHERE) {
+bitref::bitref(uint16_t * newbitline, uint8_t newwhichbit)
+        : bitline(newbitline), whichbit(newwhichbit) {
 }
 
-piecestate::piecestate(coord newpos) : alive(true), pos(newpos) {
+bitref::operator bool() const {
+    return (bool) (* bitline & (LEFT_COLUMN_BIT >> whichbit));
 }
 
-boardmap::boardmap() : data() {
-    fill(& data[0][0], & data[SIZE][0], NOBODY);
+bitref & bitref::operator=(bool newbit) {
+    if (newbit) * bitline |= LEFT_COLUMN_BIT >> whichbit;
+    else * bitline &= ~(LEFT_COLUMN_BIT >> whichbit);
 }
 
-bool boardmap::operator[](coord pos) const {
-    return data[pos.y][pos.x] != NOBODY;
+/*
+bitref & bitref::operator=(const bitref & newbit) {
+    //TODO
+}
+*/
+
+bitboard::bitboard() : data{} {
 }
 
-int & boardmap::which(coord pos) {
-    return data[pos.y][pos.x];
+bitboard::bitboard(bitboard_array newdata) : data(newdata) {
 }
 
-bool boardmap::operator!=(boardmap & that) {
-    return data != that.data;
+bool bitboard::operator[](coord pos) const {
+    return (bool) (data[pos.y] & (LEFT_COLUMN_BIT >> pos.x));
 }
 
-boardflags::boardflags() : data() {
+bitref bitboard::operator[](coord pos) {
+    return bitref(& data[pos.y], pos.x);
 }
 
-boardflags::boardflags(boardflags_array newdata) : data(newdata) {
-}
-
-bool & boardflags::operator[](coord pos) {
-    return data[pos.y][pos.x];
-}
-
-bool boardflags::operator[](coord pos) const {
-    return data[pos.y][pos.x];
-}
-
-bool boardflags::operator!=(boardflags & that) {
-    return data != that.data;
-}
-
-uint8_t neighborbits(boardmap map, coord pos) {
+uint8_t neighborbits(bitboard board, coord pos) {
     uint8_t bits = 0;
     for (int n=0 ; n<NUM_DIRS ; n+=1) {
         coord neighbor = pos + dirs[n];
-        if (neighbor.inbounds() && map[neighbor]) bits |= 1 << n;
+        if (neighbor.inbounds() && board[neighbor]) bits |= 1 << n;
     }
 
     return bits;
@@ -194,6 +187,10 @@ istream & operator>>(istream & in, gamemove & move) {
     return in;
 }
 
+void gamemove::show() {
+    cerr << * this << endl;
+}
+
 zobrist_hashes gamestate::gen_hashes() {
     mt19937_64 randgen = mt19937_64(0xfedcba9876543210ULL);
     uniform_int_distribution<uint64_t> dist(0,numeric_limits<uint64_t>::max());
@@ -213,33 +210,27 @@ zobrist_hashes gamestate::gen_hashes() {
 zobrist_hashes gamestate::hashes = gen_hashes();
 
 gamestate::gamestate() : isdwarfturn(true), sincecapt(0),
-                         numdwarfs(0), dwarfmap(),
-                         numtrolls(0), trollmap() {
+                         numdwarfs(0), numtrolls(0), board(), hash(0) {
     hash = 0;
 
     for (int y=0 ; y<SIZE ; y+=1) {
         for (int x=0 ; x<SIZE ; x+=1) {
             coord pos(x,y);
-            if (dwarfstart[pos]) {
-                dwarfs[numdwarfs] = piecestate(pos);
-                dwarfmap.which(pos) = numdwarfs;
+            if (defaultdwarfs[pos]) {
+                board.dwarfs[pos] = true;
                 hash ^= hashes.dwarfs[pos.y][pos.x];
                 numdwarfs += 1;
             }
-            else if (trollstart[pos]) {
-                trolls[numtrolls] = piecestate(pos);
-                trollmap.which(pos) = numtrolls;
+            else if (defaulttrolls[pos]) {
+                board.trolls[pos] = true;
                 hash ^= hashes.trolls[pos.y][pos.x];
                 numtrolls += 1;
             }
         }
     }
-
-    calculate_dwarfmobility();
-    calculate_dwarfthreats();
-    calculate_trollthreats();
 }
 
+/*
 void gamestate::calculate_dwarfmobility() {
     for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
         dwarfmobility[ix] = {};
@@ -260,6 +251,7 @@ void gamestate::calculate_dwarfmobility() {
         }
     }
 }
+*/
 
 /*
 void gamestate::update_dwarfmobility(coord where) {
@@ -287,6 +279,7 @@ void gamestate::update_dwarfmobility(coord where) {
 }
 */
 
+/*
 void gamestate::calculate_dwarfthreats() {
     dwarfthreats = {};
 
@@ -312,7 +305,9 @@ void gamestate::calculate_dwarfthreats() {
         }
     }
 }
+*/
 
+/*
 void gamestate::calculate_trollthreats() {
     trollthreats = {};
 
@@ -340,160 +335,62 @@ void gamestate::calculate_trollthreats() {
         }
     }
 }
+*/
 
-//TODO check hash validity
+int popcount(uint16_t bits) {
+    return __builtin_popcount(bits);
+}
+
+int leading0s(uint16_t bits) {
+    return __builtin_clzll(bits) - 48;
+}
+
 bool gamestate::valid() {
-    boardflags occupied = blocks;
-    boardmap checkdwarfmap = {};
-    boardmap checktrollmap = {};
-    uint64_t checkhash = 0;
-
-    if (! isdwarfturn) checkhash ^= hashes.turn;
-
-    // all pieces at unique legal coords
     int dwarfcount = 0;
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        piecestate dwarf = dwarfs[ix];
-        if (! dwarf.alive) continue;
-        coord pos = dwarf.pos;
-        if (! pos.inbounds()) {warn("bounds"); return false;}
-        if (occupied[pos]) {warn("occupied"); return false;}
-        occupied[pos] = true;
-        checkdwarfmap.which(pos) = ix;
-        checkhash ^= hashes.dwarfs[pos.y][pos.x];
-        dwarfcount += 1;
-        //cout << "counted a dwarf" << endl;
-    }
-    if (checkdwarfmap != dwarfmap)
-    {
-        warn("dwarfmap");
-        return false;
-    }
-    /*
-    for (int y=0 ; y<SIZE ; y+=1) {
-        for (int x=0 ; x<SIZE ; x+=1) {
-            if (checkdwarfmap[y][x] != dwarfmap[y][x])
-            {
-                warn("dwarfmap");
-                return false;
-            }
-        }
-    }
-    */
-
     int trollcount = 0;
-    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        piecestate troll = trolls[ix];
-        if (! troll.alive) continue;
-        coord pos = troll.pos;
-        if (! pos.inbounds()) {warn("bounds"); return false;}
-        if (occupied[pos]) {warn("occupied"); return false;}
-        occupied[pos] = true;
-        checktrollmap.which(pos) = ix;
-        checkhash ^= hashes.trolls[pos.y][pos.x];
-        trollcount += 1;
-        //cout << "counted a troll" << endl;
-    }
-    if (checktrollmap != trollmap)
-    {
-        warn("trollmap");
-        return false;
-    }
-    /*
+    uint64_t checkhash = 0;
     for (int y=0 ; y<SIZE ; y+=1) {
-        for (int x=0 ; x<SIZE ; x+=1) {
-            if (checktrollmap[y][x] != trollmap[y][x])
-            {
-                warn("trollmap");
-                return false;
-            }
+        // check for intersections between dwarfs, trolls, and blocks
+        if (board.blocks.data[y] & board.dwarfs.data[y]
+            || board.blocks.data[y] & board.trolls.data[y]
+            || board.dwarfs.data[y] & board.trolls.data[y]) {
+            warn("occupied");
+            return false;
+        }
+
+        // check for dwarfs and trolls out of bounds
+        if (board.dwarfs.data[y] & 0b1000000000000000
+            || board.trolls.data[y] & 0b1000000000000000) {
+            warn("bounds");
+            return false;
+        }
+
+        // check dwarf and troll counts
+        dwarfcount += popcount(board.dwarfs.data[y]);
+        trollcount += popcount(board.trolls.data[y]);
+
+        // update piece position hashes
+        uint16_t dwarfline = board.dwarfs.data[y];
+        while (dwarfline) {
+            int x = leading0s(dwarfline) - 1;
+            dwarfline &= ~ (LEFT_COLUMN_BIT >> x);
+
+            checkhash ^= hashes.dwarfs[y][x];
+        }
+        uint16_t trollline = board.trolls.data[y];
+        while (trollline) {
+            int x = leading0s(trollline) - 1;
+            trollline &= ~ (LEFT_COLUMN_BIT >> x);
+
+            checkhash ^= hashes.trolls[y][x];
         }
     }
-    */
-
-    if (checkhash != hash) {warn("hash"); return false;}
-
-    // piece counts accurate
     if (dwarfcount != numdwarfs) {warn("dwarfcount"); return false;}
     if (trollcount != numtrolls) {warn("trollcount"); return false;}
 
-    // dwarf mobility accurate
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        piecestate dwarf = dwarfs[ix];
-        if (! dwarf.alive) {
-            if (dwarfmobility[ix] != array<int,NUM_DIRS>()) {
-                warn("mobility");
-                return false;
-            }
-            continue;
-        }
-        coord pos = dwarf.pos;
-        for (int n=0 ; n<NUM_DIRS ; n+=1) {
-            coord delta = dirs[n];
-            int mobility = 0;
-            for (int dist=1 ; dist<SIZE ; dist+=1) {
-                coord check = pos + dist*delta;
-                if (! check.inbounds()) break;
-                else if (occupied[check]) break;
-                else mobility = dist;
-            }
-            if (dwarfmobility[ix][n] != mobility) {
-                warn("mobility");
-                return false;
-            }
-        }
-    }
-
-    // threat maps accurate
-    boardflags checkdwarfthreats = {};
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        piecestate dwarf = dwarfs[ix];
-        if (! dwarf.alive) continue;
-        coord pos = dwarf.pos;
-        for (int n=0 ; n<NUM_DIRS ; n+=1) {
-            coord delta = dirs[n];
-            for (int dist=1 ; dist<SIZE ; dist+=1) {
-                coord check = pos - (dist-1)*delta;
-                coord attack = pos + dist*delta;
-                if (! check.inbounds()) break;
-                if (! attack.inbounds()) break;
-                if (! dwarfmap[check]) break;
-                if (occupied[attack]) {
-                    if (trollmap[attack]) {
-                        checkdwarfthreats[attack] = true;
-                    }
-                    break;
-                }
-                checkdwarfthreats[attack] = true;
-            }
-        }
-    }
-    if (checkdwarfthreats != dwarfthreats) {warn("dwarfthreats"); return false;}
-
-    boardflags checktrollthreats = {};
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        piecestate troll = trolls[ix];
-        if (! troll.alive) continue;
-        coord pos = troll.pos;
-        for (int n=0 ; n<NUM_DIRS ; n+=1) {
-            coord delta = dirs[n];
-            for (int dist=1 ; dist<SIZE ; dist+=1) {
-                coord check = pos - (dist-1)*delta;
-                coord shoveto = pos + dist*delta;
-                if (! check.inbounds()) break;
-                if (! shoveto.inbounds()) break;
-                if (! trollmap[check]) break;
-                if (occupied[shoveto]) break;
-                for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
-                    coord attack = shoveto + dirs[nn];
-                    if (! attack.inbounds()) continue;
-                    if (blocks[attack]) continue;
-                    checktrollthreats[attack] = true;
-                }
-            }
-        }
-    }
-    if (checktrollthreats != trollthreats) {warn("trollthreats"); return false;}
+    // check hash value
+    if (! isdwarfturn) checkhash ^= hashes.turn;
+    if (checkhash != hash) {warn("hash"); return false;}
 
     // no problems found
     return true;
@@ -508,29 +405,37 @@ vector<gamemove> gamestate::allmoves() {
 vector<gamemove> gamestate::alldwarfmoves() {
     vector<gamemove> allmoves = {};
 
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        if (! dwarfs[ix].alive) continue;
-        coord from = dwarfs[ix].pos;
-        for (int n=0 ; n<NUM_DIRS ; n+=1) {
-            for (int dist=1 ; dist<=SIZE ; dist+=1) {
-                coord check = from - (dist-1)*dirs[n];
-                if (! check.inbounds()) break;
-                if (! dwarfmap[check]) break;
-                coord to = from + dist*dirs[n];
-                if (! to.inbounds()) break;
-                if (blocks[to]) break;
-                if (dwarfmap[to]) break;
-                if (trollmap[to]) {
-                    gamemove move = gamemove(true, from, to, true);
-                    allmoves.push_back(move);
-                    break;
-                }
-            }
+    for (int y=0 ; y<SIZE ; y+=1) {
+        uint16_t dwarfline = board.dwarfs.data[y];
+        while (dwarfline) {
+            int x = leading0s(dwarfline) - 1;
+            dwarfline &= ~ (LEFT_COLUMN_BIT >> x);
 
-            for (int dist=1 ; dist<=dwarfmobility[ix][n] ; dist+=1) {
-                coord to = from + dist*dirs[n];
-                if (! to.inbounds()) warn("bad mobility");
-                allmoves.push_back(gamemove(true, from, to));
+            coord from = coord(x,y);
+            for (int n=0 ; n<NUM_DIRS ; n+=1) {
+                for (int dist=1 ; dist<=SIZE ; dist+=1) {
+                    coord check = from - (dist-1)*dirs[n];
+                    if (! check.inbounds()) break;
+                    if (! board.dwarfs[check]) break;
+                    coord to = from + dist*dirs[n];
+                    if (! to.inbounds()) break;
+                    if (board.blocks[to]) break;
+                    if (board.dwarfs[to]) break;
+                    if (board.trolls[to]) {
+                        gamemove move = gamemove(true, from, to, true);
+                        allmoves.push_back(move);
+                        break;
+                    }
+                }
+
+                for (int dist=1 ; dist<=SIZE ; dist+=1) {
+                    coord to = from + dist*dirs[n];
+                    if (! to.inbounds()) break;
+                    if (board.blocks[to]) break;
+                    if (board.dwarfs[to]) break;
+                    if (board.trolls[to]) break;
+                    allmoves.push_back(gamemove(true, from, to));
+                }
             }
         }
     }
@@ -541,42 +446,46 @@ vector<gamemove> gamestate::alldwarfmoves() {
 vector<gamemove> gamestate::alltrollmoves() {
     vector<gamemove> allmoves = {};
 
-    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        piecestate troll = trolls[ix];
-        if (! troll.alive) continue;
-        coord from = troll.pos;
-        for (int n=0 ; n<NUM_DIRS ; n+=1) {
-            for (int dist=1 ; dist<=SIZE ; dist+=1) {
-                coord check = from - (dist-1)*dirs[n];
-                // can't shove unless at least 2 trolls
-                if (dist == 1) check = from - dist*dirs[n];
-                if (! check.inbounds()) break;
-                if (! trollmap[check]) break;
-                coord to = from + dist*dirs[n];
-                if (! to.inbounds()) break;
-                if (blocks[to]) break;
-                if (trollmap[to]) break;
-                if (dwarfmap[to]) break;
+    for (int y=0 ; y<SIZE ; y+=1) {
+        uint16_t trollline = board.trolls.data[y];
+        while (trollline) {
+            int x = leading0s(trollline) - 1;
+            trollline &= ~ (LEFT_COLUMN_BIT >> x);
 
-                uint8_t capts = neighborbits(dwarfmap, to);
-                if (capts) {
-                    gamemove move = gamemove(false, from, to, true, capts);
-                    allmoves.push_back(move);
-                }
-            }
+            coord from = coord(x,y);
+            for (int n=0 ; n<NUM_DIRS ; n+=1) {
+                for (int dist=1 ; dist<=SIZE ; dist+=1) {
+                    coord check = from - (dist-1)*dirs[n];
+                    // can't shove unless at least 2 trolls
+                    if (dist == 1) check = from - dist*dirs[n];
+                    if (! check.inbounds()) break;
+                    if (! board.trolls[check]) break;
+                    coord to = from + dist*dirs[n];
+                    if (! to.inbounds()) break;
+                    if (board.blocks[to]) break;
+                    if (board.trolls[to]) break;
+                    if (board.dwarfs[to]) break;
 
-            coord to = from + dirs[n];
-            if (! to.inbounds()) break;
-            if (! blocks[to]
-             && ! trollmap[to]
-             && ! dwarfmap[to]) {
-                allmoves.push_back(gamemove(false, from, to));
-                for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
-                    coord attack = to + dirs[nn];
-                    if (attack.inbounds() && dwarfmap[attack]) {
-                        uint8_t capts = (uint8_t) 1 << nn;
+                    uint8_t capts = neighborbits(board.dwarfs, to);
+                    if (capts) {
                         gamemove move = gamemove(false, from, to, true, capts);
                         allmoves.push_back(move);
+                    }
+                }
+
+                coord to = from + dirs[n];
+                if (! to.inbounds()) break;
+                if (! board.blocks[to]
+                 && ! board.trolls[to]
+                 && ! board.dwarfs[to]) {
+                    allmoves.push_back(gamemove(false, from, to));
+                    for (int nn=0 ; nn<NUM_DIRS ; nn+=1) {
+                        coord attack = to + dirs[nn];
+                        if (attack.inbounds() && board.dwarfs[attack]) {
+                            uint8_t capts = (uint8_t) 1 << nn;
+                            gamemove move = gamemove(false, from, to, true, capts);
+                            allmoves.push_back(move);
+                        }
                     }
                 }
             }
@@ -600,19 +509,14 @@ void gamestate::domove(gamemove move) {
 }
 
 void gamestate::dodwarfmove(gamemove move) {
-    int dwarfix = dwarfmap.which(move.from);
-    dwarfs[dwarfix].pos = move.to;
-    dwarfmap.which(move.from) = NOBODY;
+    board.dwarfs[move.from] = false;
     hash ^= hashes.dwarfs[move.from.y][move.from.x];
-    dwarfmap.which(move.to) = dwarfix;
+    board.dwarfs[move.to] = true;
     hash ^= hashes.dwarfs[move.to.y][move.to.x];
 
     if (move.capt) {
         sincecapt = 0;
-        int trollix = trollmap.which(move.to);
-        trolls[trollix].alive = false;
-        trolls[trollix].pos = NOWHERE;
-        trollmap.which(move.to) = NOBODY;
+        board.trolls[move.to] = false;
         hash ^= hashes.trolls[move.to.y][move.to.x];
         numtrolls -= 1;
     }
@@ -620,18 +524,12 @@ void gamestate::dodwarfmove(gamemove move) {
 
     isdwarfturn = false;
     hash ^= hashes.turn;
-
-    calculate_dwarfmobility();
-    calculate_dwarfthreats();
-    calculate_trollthreats();
 }
 
 void gamestate::dotrollmove(gamemove move) {
-    int trollix = trollmap.which(move.from);
-    trolls[trollix].pos = move.to;
-    trollmap.which(move.from) = NOBODY;
+    board.trolls[move.from] = false;
     hash ^= hashes.trolls[move.from.y][move.from.x];
-    trollmap.which(move.to) = trollix;
+    board.trolls[move.to] = true;
     hash ^= hashes.trolls[move.to.y][move.to.x];
 
     if (move.capt) {
@@ -639,10 +537,7 @@ void gamestate::dotrollmove(gamemove move) {
         for (int n=0 ; n<NUM_DIRS ; n+=1) {
             if (move.capts & (uint8_t(1) << n)) {
                 coord attack = move.to + dirs[n];
-                int dwarfix = dwarfmap.which(attack);
-                dwarfs[dwarfix].alive = false;
-                dwarfs[dwarfix].pos = NOWHERE;
-                dwarfmap.which(attack) = NOBODY;
+                board.dwarfs[attack] = false;
                 hash ^= hashes.dwarfs[attack.y][attack.x];
                 numdwarfs -= 1;
             }
@@ -652,10 +547,6 @@ void gamestate::dotrollmove(gamemove move) {
 
     isdwarfturn = true;
     hash ^= hashes.turn;
-
-    calculate_dwarfmobility();
-    calculate_dwarfthreats();
-    calculate_trollthreats();
 }
 
 gamestate gamestate::child(gamemove move) {
@@ -675,18 +566,5 @@ double gamestate::final_score() {
 }
 
 double gamestate::heuristic_score() {
-    int dwarfthreaten = 0;
-    for (int ix=0 ; ix<MAX_TROLLS ; ix+=1) {
-        if (! trolls[ix].alive) continue;
-        if (dwarfthreats[trolls[ix].pos]) dwarfthreaten += 1;
-    }
-
-    int trollthreaten = 0;
-    for (int ix=0 ; ix<MAX_DWARFS ; ix+=1) {
-        if (! dwarfs[ix].alive) continue;
-        if (trollthreats[dwarfs[ix].pos]) trollthreaten += 1;
-    }
-
-    return numtrolls * 4.0 + trollthreaten * 0.1
-           - (numdwarfs * 1.0 + dwarfthreaten * 0.4);
+    return numtrolls * 4.0 - numdwarfs * 1.0;
 }

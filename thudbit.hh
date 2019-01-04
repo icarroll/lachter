@@ -38,120 +38,6 @@ const int NUM_DIRS = 8;
 const array<coord,NUM_DIRS> dirs = {(coord){1,0},  {1,1},   {0,1},  {-1,1},
                                            {-1,0}, {-1,-1}, {0,-1}, {1,-1}};
 
-struct piecestate {
-    bool alive;
-    coord pos;
-
-    piecestate();
-    piecestate(coord newpos);
-};
-
-typedef array<array<int,SIZE>,SIZE> boardmap_array;
-
-struct boardmap {
-    boardmap_array data;
-
-    boardmap();
-
-    bool operator[](coord pos) const;
-
-    int & which(coord pos);
-
-    bool operator!=(boardmap & that);
-};
-
-const int NOBODY = -1;
-
-typedef array<array<bool,SIZE>,SIZE> boardflags_array;
-
-struct boardflags {
-    boardflags_array data;
-
-    boardflags();
-    boardflags(boardflags_array newdata);
-
-    bool & operator[](coord pos);
-    bool operator[](coord pos) const;
-
-    bool operator!=(boardflags & that);
-};
-
-uint8_t neighborbits(boardmap map, coord pos);
-
-const boardflags blocks({(array<bool,SIZE>)
-        {1,1,1,1,1,0,0,0,0,0,1,1,1,1,1},
-        {1,1,1,1,0,0,0,0,0,0,0,1,1,1,1},
-        {1,1,1,0,0,0,0,0,0,0,0,0,1,1,1},
-        {1,1,0,0,0,0,0,0,0,0,0,0,0,1,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,1,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,1,0,0,0,0,0,0,0,0,0,0,0,1,1},
-        {1,1,1,0,0,0,0,0,0,0,0,0,1,1,1},
-        {1,1,1,1,0,0,0,0,0,0,0,1,1,1,1},
-        {1,1,1,1,1,0,0,0,0,0,1,1,1,1,1}
-});
-
-const boardflags dwarfstart({(array<bool,SIZE>)
-        {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0},
-        {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
-        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
-        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
-        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
-        {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
-        {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0}
-});
-
-/*
-const boardflags dwarfstart({(array<bool,SIZE>)
-        {0,0,0,0,0,0,1,0,1,1,0,0,0,0,0},
-        {0,0,0,0,1,0,1,0,0,0,1,0,0,0,0},
-        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
-        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {1,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-        {0,1,0,0,0,0,0,0,0,0,0,0,0,1,0},
-        {0,0,1,0,0,0,0,0,0,0,0,0,1,0,0},
-        {0,0,0,1,0,0,0,0,0,0,0,1,0,0,0},
-        {0,0,0,0,1,0,0,0,0,0,1,0,0,0,0},
-        {0,0,0,0,0,1,1,0,1,1,0,0,0,0,0}
-});
-*/
-
-const boardflags trollstart({(array<bool,SIZE>)
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,1,1,1,0,0,0,0,0,0},
-        {0,0,0,0,0,0,1,0,1,0,0,0,0,0,0},
-        {0,0,0,0,0,0,1,1,1,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-        {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-});
-
 struct gamemove {
     bool isdwarfmove = false;
     coord from = NOWHERE;
@@ -171,7 +57,97 @@ struct gamemove {
 
     friend ostream & operator<<(ostream & out, const gamemove move);
     friend istream & operator>>(istream & in, gamemove & move);
+
+    void show();
 };
+
+struct bitref {
+    uint16_t * bitline;
+    uint8_t whichbit;
+
+    bitref(uint16_t * newbitline, uint8_t newwhichbit);
+
+    operator bool() const;
+    bitref & operator=(bool newbit);
+    bitref & operator=(const bitref & newbit);
+    bool operator~() const;
+};
+
+using bitboard_array = array<uint16_t,SIZE>;
+struct bitboard {
+    bitboard_array data;
+
+    bitboard();
+    bitboard(bitboard_array newdata);
+
+    bool operator[](coord pos) const;
+    bitref operator[](coord pos);
+    bool operator!=(bitboard & that);
+};
+
+const uint16_t LEFT_COLUMN_BIT = 0b0100000000000000;
+
+struct gameboard {
+    bitboard dwarfs;
+    bitboard trolls;
+    bitboard blocks;
+};
+
+const bitboard defaultblocks({
+    0b111110000011111,
+    0b111100000001111,
+    0b111000000000111,
+    0b110000000000011,
+    0b100000000000001,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000010000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b100000000000001,
+    0b110000000000011,
+    0b111000000000111,
+    0b111100000001111,
+    0b111110000011111
+});
+
+const bitboard defaultdwarfs({
+    0b000001101100000,
+    0b000010000010000,
+    0b000100000001000,
+    0b001000000000100,
+    0b010000000000010,
+    0b100000000000001,
+    0b100000000000001,
+    0b000000000000000,
+    0b100000000000001,
+    0b100000000000001,
+    0b010000000000010,
+    0b001000000000100,
+    0b000100000001000,
+    0b000010000010000,
+    0b000001101100000
+});
+
+const bitboard defaulttrolls({
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000111000000,
+    0b000000101000000,
+    0b000000111000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000,
+    0b000000000000000
+});
+
+uint8_t neighborbits(bitboard board, coord pos);
 
 const int MAX_DWARFS = 32;
 const int MAX_TROLLS = 8;
@@ -188,16 +164,8 @@ struct gamestate {
     int sincecapt;
 
     int numdwarfs;
-    array<piecestate,MAX_DWARFS> dwarfs;
-    boardmap dwarfmap;
-    array<array<int,NUM_DIRS>,MAX_DWARFS> dwarfmobility;
-
     int numtrolls;
-    array<piecestate,MAX_TROLLS> trolls;
-    boardmap trollmap;
-
-    boardflags dwarfthreats;
-    boardflags trollthreats;
+    gameboard board;
 
     uint64_t hash;
 
@@ -205,9 +173,6 @@ struct gamestate {
     static zobrist_hashes gen_hashes();
 
     gamestate();
-    void calculate_dwarfmobility();
-    void calculate_dwarfthreats();
-    void calculate_trollthreats();
 
     bool valid();
 
