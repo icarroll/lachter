@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <map>
 #include <memory>
 #include <set>
@@ -8,7 +9,7 @@ extern "C" {
 #include <time.h>
 }
 
-#include "thud1.hh"
+#include "thudbit.hh"
 
 struct rollout2_entry {
     uint64_t hash;

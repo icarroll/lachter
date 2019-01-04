@@ -36,19 +36,23 @@ rollout2_brain::rollout2_brain(gamestate newstate) : state(newstate) {
     ttable_size = TTABLE_SIZE;
     //ttable = new rollout2_entry[ttable_size];
     ttable = (rollout2_entry *) malloc(ttable_size * sizeof(rollout2_entry));
+    //memset(ttable, 0, ttable_size * sizeof(rollout2_entry)); // pacify valgrind
     cout << "ttable allocated" << endl;
 }
 
 void rollout2_brain::think_seconds(double seconds) {
     double start_time = get_now();
     double end_time = start_time + seconds;
+    int probes = 0;
     while (get_now() < end_time) {
         for (int n=0 ; n<STEPS ; n+=1) {
             rollout2_entry entry_s = ttable_get(state);
             if (entry_s.vminus >= entry_s.vplus) return;
             rollout2(state, entry_s.vminus, entry_s.vplus);
+            probes += 1;
         }
     }
+    cerr << "did " << probes << " probes" << endl;
 }
 
 double get_now() {
@@ -161,10 +165,8 @@ gamemove rollout2_brain::best_move() {
     vector<gamemove> allmoves = state.allmoves();
     for (auto move : allmoves) {
         rollout2_entry entry = ttable_get(state.child(move));
-        /*
         cout << move << ": " << entry.mu << ", " << entry.visits
              << ", " << entry.vminus << ".." << entry.vplus << endl;
-        */
     }
 }
 

@@ -2,7 +2,7 @@
 
 #include "mcts.hh"
 
-const double THINK_TIME = 60.0;
+const double THINK_TIME = 10.0;
 
 int main(int numargs, char * args[]) {
     gamestate board;

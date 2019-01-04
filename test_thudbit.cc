@@ -6,10 +6,6 @@
 
 const int NTRIES = 1000;
 
-static void warn(string msg) {
-    cerr << msg << endl;
-}
-
 int main(int numargs, char * args[]) {
     bitboard board;
     for (int y=0 ; y<SIZE ; y+=1) {
@@ -18,6 +14,8 @@ int main(int numargs, char * args[]) {
     board[coord(5,5)] = true;
     assert(board.data[5] == LEFT_COLUMN_BIT >> 5);
     assert(board[coord(5,5)]);
+
+    //TODO test all moves for validity
 
     mt19937 randgen(time(NULL));
 

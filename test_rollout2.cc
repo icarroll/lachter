@@ -10,10 +10,10 @@ int main(int numargs, char * args[]) {
     rollout2_brain brain(board);
 
     cout << "starting think" << endl;
-    brain.think_seconds(0.1);
+    brain.think_seconds(60.0);
     cout << "thinking done" << endl;
     gamemove move = brain.best_move();
-    brain.do_move(move);
+    //brain.do_move(move);
 
     return 0;
 }

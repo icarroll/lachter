@@ -7,7 +7,7 @@ extern "C" {
 #include <time.h>
 }
 
-#include "thud1.hh"
+#include "thudbit.hh"
 
 //const double UCB1_C = 1.414;   // ~sqrt(2)
 //const double UCB1_C = 1.0e-4; //TODO tune this by hill climbing
