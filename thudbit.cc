@@ -232,6 +232,9 @@ gamestate::gamestate() : isdwarfturn(true), sincecapt(0),
                 hash ^= hashes.trolls[pos.y][pos.x];
                 numtrolls += 1;
             }
+            else if (defaultblocks[pos]) {
+                board.blocks[pos] = true;
+            }
         }
     }
 }
