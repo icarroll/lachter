@@ -25,8 +25,8 @@ rough task order (TEST ALL THE THINGS)
 * UI of some sort
 * naive minimax
 * iterative deepening
-* zobrist hashing
-* ttable
+✓ zobrist hashing
+✓ ttable
 * game data serialization format
 * move ordering
 * alpha-beta pruning
