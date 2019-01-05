@@ -14,11 +14,11 @@ double minimax_brain::minimax(gamestate node, int depth, bool top) {
     vector<gamemove> moves = node.allmoves();
     vector<gamemove> newbestmoves = {};
 
-    int value = node.isdwarfturn ? INT_MAX : INT_MIN;
+    double value = node.isdwarfturn ? INT_MAX : INT_MIN;
     for (gamemove move : moves) {
         gamestate newnode = node;
         newnode.domove(move);
-        int newvalue = minimax(newnode, depth-1);
+        double newvalue = minimax(newnode, depth-1);
         if (top && newvalue == value) {
             newbestmoves.push_back(move);
         }

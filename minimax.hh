@@ -8,7 +8,7 @@ extern "C" {
 #include <time.h>
 }
 
-#include "thud1.hh"
+#include "thudbit.hh"
 
 struct minimax_brain {
     gamestate state;

@@ -1,13 +1,13 @@
 #include <iomanip>
 #include <iostream>
 
-#include "minimax.hh"
+#include "alphabeta.hh"
 
 int main(int numargs, char * args[]) {
     gamestate board;
-    minimax_brain brain(board);
+    alphabeta_brain brain(board);
 
-    brain.think_depth(3);
+    brain.think_depth(5);
     //cout << brain.best_move() << endl;
 
     return 0;
