@@ -219,21 +219,21 @@ gamestate::gamestate() : isdwarfturn(true), sincecapt(0),
                          numdwarfs(0), numtrolls(0), board(), hash(0) {
     hash = 0;
 
+    board.dwarfs = defaultdwarfs;
+    board.trolls = defaulttrolls;
+    board.blocks = defaultblocks;
+
+    //TODO this is slow, go by rows and leading 0s instead
     for (int y=0 ; y<SIZE ; y+=1) {
         for (int x=0 ; x<SIZE ; x+=1) {
             coord pos(x,y);
-            if (defaultdwarfs[pos]) {
-                board.dwarfs[pos] = true;
+            if (board.dwarfs[pos]) {
                 hash ^= hashes.dwarfs[pos.y][pos.x];
                 numdwarfs += 1;
             }
-            else if (defaulttrolls[pos]) {
-                board.trolls[pos] = true;
+            else if (board.trolls[pos]) {
                 hash ^= hashes.trolls[pos.y][pos.x];
                 numtrolls += 1;
-            }
-            else if (defaultblocks[pos]) {
-                board.blocks[pos] = true;
             }
         }
     }
@@ -411,6 +411,7 @@ vector<gamemove> gamestate::allmoves() {
     else return alltrollmoves();
 }
 
+//TODO program spends like 50% of execution time here, speed it up
 vector<gamemove> gamestate::alldwarfmoves() {
     vector<gamemove> allmoves = {};
 
