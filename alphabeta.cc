@@ -46,44 +46,57 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
     if (node.gameover()) return node.final_score();
     if (depth == 0) return node.heuristic_score();
 
-    vector<gamemove> moves = node.allmoves();
-    vector<gamemove> newbestmoves = {};
+    alphabeta_entry entry = ttable_get(node);
+    if (entry.depth >= depth) return entry.value;
 
+    vector<gamemove> moves = node.allmoves();
+    gamemove newbestmove;
+    int numbestmoves = 0;
+
+    bool cut = false;
     double value = node.isdwarfturn ? INFINITY : -INFINITY;
     for (gamemove move : moves) {
         gamestate newnode = node;
         newnode.domove(move);
+
         double newvalue = alphabeta(newnode, depth-1, alpha, beta);
+
         if (top && newvalue == value) {
-            newbestmoves.push_back(move);
+            numbestmoves += 1;
+            uniform_int_distribution<> dist(1,numbestmoves);
+            if (dist(randgen) == 0) newbestmove = move;
         }
         else if (node.isdwarfturn) {
             if (newvalue < value) {
                 value = newvalue;
-                if (top) newbestmoves = {move};
+                if (top) {newbestmove = move; numbestmoves = 1;}
             }
             if (value < beta) beta = value;
         }
         else {
             if (newvalue > value) {
                 value = newvalue;
-                if (top) newbestmoves = {move};
+                if (top) {newbestmove = move; numbestmoves = 1;}
             }
             if (value > alpha) alpha = value;
         }
 
-        if (alpha >= beta) {
-            break;
-        }
+        if (alpha >= beta) {cut = true; break;}
     }
 
-    if (top) bestmoves = newbestmoves;
+    entry.alpha = alpha;
+    entry.beta = beta;
+    entry.value = value;
+    entry.depth = depth;
+    ttable_put(entry);
+
+    if (top) bestmove = newbestmove;
     return value;
 }
 
 gamemove alphabeta_brain::best_move() {
     //cout << "found " << bestmoves.size() << " moves" << endl;
-    return bestmoves[0];
+    return bestmove;
 }
 
 alphabeta_entry alphabeta_brain::ttable_get(gamestate state) {

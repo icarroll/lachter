@@ -14,6 +14,8 @@ struct alphabeta_entry {
     uint64_t hash;
     double alpha = -INFINITY;
     double beta = INFINITY;
+    double value = 0;
+    int depth = 0;
     uint64_t checksum;
 
     alphabeta_entry();
@@ -25,13 +27,13 @@ struct alphabeta_entry {
 };
 
 // default to largest prime less than 100 million
-// results in table size of ~3.2GB
+// results in table size of ~4.5GB
 const int TTABLE_SIZE = 99999787;
 
 struct alphabeta_brain {
     mt19937 randgen;
     gamestate state;
-    vector<gamemove> bestmoves = {};
+    gamemove bestmove;
 
     uint64_t ttable_size;
     alphabeta_entry * ttable;
