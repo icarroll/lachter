@@ -37,6 +37,10 @@ alphabeta_brain::alphabeta_brain(gamestate newstate) : state(newstate) {
     ttable = (alphabeta_entry *) malloc(ttable_size * sizeof(alphabeta_entry));
 }
 
+void alphabeta_brain::iterative_deepen(int maxdepth) {
+    for (int depth=1 ; depth<=maxdepth ; depth+=1) think_depth(depth);
+}
+
 void alphabeta_brain::think_depth(int depth) {
     alphabeta(state, depth, -INFINITY, INFINITY, true);
 }

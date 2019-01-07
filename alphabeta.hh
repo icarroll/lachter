@@ -42,8 +42,9 @@ struct alphabeta_brain {
 
     alphabeta_brain(gamestate newstate);
 
-    void think_depth(int depth);
     //void think_seconds(double seconds);
+    void iterative_deepen(int maxdepth);
+    void think_depth(int depth);
     double alphabeta(gamestate node, int depth, double alpha, double beta,
                      bool top=false);
 

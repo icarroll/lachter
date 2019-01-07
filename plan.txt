@@ -24,7 +24,7 @@ rough task order (TEST ALL THE THINGS)
 * some kind of game tree debugging tool thingy
 * UI of some sort
 * naive minimax
-* iterative deepening
+✓ iterative deepening
 ✓ zobrist hashing
 ✓ ttable
 * game data serialization format
