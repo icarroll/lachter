@@ -53,13 +53,18 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
     gamemove newbestmove;
     int numbestmoves = 0;
 
-    bool cut = false;
     double value = node.isdwarfturn ? INFINITY : -INFINITY;
     for (gamemove move : moves) {
         gamestate newnode = node;
         newnode.domove(move);
 
-        double newvalue = alphabeta(newnode, depth-1, alpha, beta);
+        int newdepth = depth-1;
+        if (ok_to_extend && depth < 2 && newnode.in_threat(move.to)) {
+            ok_to_extend = false;
+            newdepth += 1;
+        }
+        double newvalue = alphabeta(newnode, newdepth, alpha, beta);
+        ok_to_extend = true;
 
         if (top && newvalue == value) {
             numbestmoves += 1;
@@ -81,7 +86,7 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
             if (value > alpha) alpha = value;
         }
 
-        if (alpha >= beta) {cut = true; break;}
+        if (alpha >= beta) break;
     }
 
     entry.alpha = alpha;
@@ -97,6 +102,10 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
 gamemove alphabeta_brain::best_move() {
     //cout << "found " << bestmoves.size() << " moves" << endl;
     return bestmove;
+}
+
+void alphabeta_brain::do_move(gamemove move) {
+    state.domove(move);
 }
 
 alphabeta_entry alphabeta_brain::ttable_get(gamestate state) {

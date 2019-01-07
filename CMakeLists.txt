@@ -46,6 +46,9 @@ target_link_libraries(selfplay_mcts thudbit mcts)
 add_executable(selfplay_rollout2 selfplay_rollout2.cc)
 target_link_libraries(selfplay_rollout2 thudbit rollout2)
 
+add_executable(selfplay_alphabeta selfplay_alphabeta.cc)
+target_link_libraries(selfplay_alphabeta thudbit alphabeta)
+
 enable_testing()
 add_test(NAME test_thud1 COMMAND test_thud1)
 add_test(NAME test_thudbit COMMAND test_thudbit)

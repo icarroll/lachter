@@ -559,6 +559,12 @@ void gamestate::dotrollmove(gamemove move) {
     hash ^= hashes.turn;
 }
 
+//TODO check all moves into threat
+bool gamestate::in_threat(coord pos) {
+    if (isdwarfturn) return (bool) neighborbits(board.trolls, pos);
+    else return false;
+}
+
 gamestate gamestate::child(gamemove move) {
     gamestate newstate = * this;
     newstate.domove(move);

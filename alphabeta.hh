@@ -35,6 +35,8 @@ struct alphabeta_brain {
     gamestate state;
     gamemove bestmove;
 
+    bool ok_to_extend = true;
+
     uint64_t ttable_size;
     alphabeta_entry * ttable;
 

@@ -185,6 +185,8 @@ struct gamestate {
     void dodwarfmove(gamemove move);
     void dotrollmove(gamemove move);
 
+    bool in_threat(coord pos);
+
     gamestate child(gamemove move);
 
     bool gameover();
