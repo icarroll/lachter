@@ -19,18 +19,18 @@ rough task order (TEST ALL THE THINGS)
 ✓ do move
 ✓ minimal evaluator
 ✓ mcts
-* undo move
-* incremental move generation (not boost coroutine2, too bulky)
-* some kind of game tree debugging tool thingy
-* UI of some sort
-* naive minimax
+✓ naive minimax
 ✓ iterative deepening
 ✓ zobrist hashing
 ✓ ttable
-* game data serialization format
-* move ordering
 ✓ alpha-beta pruning
 ✓ search extension (eg for sacrifice moves)
+* UI of some sort
+* move ordering
+* undo move
+* incremental move generation (not boost coroutine2, too bulky)
+* some kind of game tree debugging tool thingy
+* game data serialization format
 * mtd(f) (for help with ttable debugging)
 * fat evaluator
 * automatic tuning of fat evaluator
