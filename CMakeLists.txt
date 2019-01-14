@@ -9,16 +9,18 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_FLAGS "-O3")
 
+add_subdirectory("libwebsockets")
+include_directories(${PROJECT_BINARY_DIR}/libwebsockets/include/)
+
 add_library(thud1 thud1.cc)
 add_library(thudbit thudbit.cc)
 add_library(mcts mcts.cc)
 add_library(minimax minimax.cc)
 add_library(alphabeta alphabeta.cc)
 add_library(rollout2 rollout2.cc)
-add_library(easywsclient easywsclient.cpp)
 
 add_executable(thurisaz_bot thurisaz_bot.cc)
-target_link_libraries(thurisaz_bot thudbit alphabeta easywsclient)
+target_link_libraries(thurisaz_bot thudbit alphabeta websockets)
 
 add_executable(test_thud1 test_thud1.cc)
 target_link_libraries(test_thud1 thud1)
