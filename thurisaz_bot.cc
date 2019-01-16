@@ -10,11 +10,45 @@ extern "C" {
 
 #include "alphabeta.hh"
 
+int interrupted, rx_seen, test;
+struct lws * client_wsi;
+
+int callback_thurisaz(struct lws * wsi, enum lws_callback_reasons reason,
+                      void * user, void * in, size_t len) {
+    switch (reason) {
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+        lwsl_err("CLIENT_CONNECTION_ERROR: %s\n",
+             in ? (char *)in : "(null)");
+        client_wsi = NULL;
+        break;
+
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+        lwsl_user("%s: established\n", __func__);
+        break;
+
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+        lwsl_user("RX: %s\n", (const char *)in);
+        rx_seen++;
+        if (test && rx_seen == 10)
+            interrupted = 1;
+        break;
+
+    case LWS_CALLBACK_CLIENT_CLOSED:
+        client_wsi = NULL;
+        break;
+
+    default:
+        break;
+    }
+
+    return lws_callback_http_dummy(wsi, reason, user, in, len);
+}
+
 static const struct lws_protocols protocols[] = {
     {
         "thurisaz",
-        NULL, //XXX callback_thurisaz,
-        0xdeadbeef, //XXX sizeof(WHUT)
+        callback_thurisaz,
+        0,
         0,
     },
     { NULL, NULL, 0, 0 }
@@ -40,9 +74,9 @@ void handle_message(string message) {
 }
 
 int main(int numargs, char * args[]) {
-    string url = "ws://localhost:20821/";
+    //string url = "ws://localhost:20821/";
 
-    struct lws_client_connect_info i;
+    lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE, NULL);
 
     struct lws_context_creation_info info;
     memset(& info, 0, sizeof(info));
@@ -52,6 +86,26 @@ int main(int numargs, char * args[]) {
 
     struct lws_context * context;
     context = lws_create_context(& info);
+
+    struct lws_client_connect_info i;
+    memset(& i, 0, sizeof(i));
+    i.context = context;
+    i.port = 20821;
+    i.address = "localhost";
+    i.path = "/";
+    i.host = i.address;
+    i.origin = i.address;
+    i.ssl_connection = 0;
+    i.protocol = NULL;
+    i.pwsi = & client_wsi;
+
+    lws_client_connect_via_info(& i);
+
+    while (client_wsi) {
+        lws_service(context, 1000);
+    }
+
+    lws_context_destroy(context);
 
     //-----
 
