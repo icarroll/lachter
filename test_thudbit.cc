@@ -1,6 +1,7 @@
 #include <cassert>
 #include <iostream>
 #include <random>
+#include <sstream>
 
 #include "thudbit.hh"
 
@@ -14,6 +15,20 @@ int main(int numargs, char * args[]) {
     board[coord(5,5)] = true;
     assert(board.data[5] == LEFT_COLUMN_BIT >> 5);
     assert(board[coord(5,5)]);
+
+    gamemove move1;
+    assert(! move1.capt);
+    stringstream move1_str("d K13-K11xK11");
+    move1_str >> move1;
+    assert(move1.capt);
+    assert(move1.capts == 0b00000000);
+
+    gamemove move2;
+    assert(! move2.capt);
+    stringstream move2_str("T H9-K11xK12xJ11");
+    move2_str >> move2;
+    assert(move2.capt);
+    assert(move2.capts == 0b00010100);
 
     //TODO test all moves for validity
 

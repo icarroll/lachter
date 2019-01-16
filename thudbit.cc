@@ -185,9 +185,14 @@ istream & operator>>(istream & in, gamemove & move) {
     if (dash != '-') warn("bad move");
 
     while (in.peek() == 'x') {
+        move.capt = true;
         in.get();
         coord attack;
         in >> ws >> attack >> ws;
+        for (int n=0 ; n<NUM_DIRS ; n+=1) {
+            coord neighbor = move.to + dirs[n];
+            if (neighbor == attack) move.capts |= 1 << n;
+        }
     }
 
     return in;
@@ -573,6 +578,7 @@ gamestate gamestate::child(gamemove move) {
 
 bool gamestate::gameover() {
     bool allcapt = numdwarfs == 0 || numtrolls == 0;
+    return allcapt || sincecapt > 20;
     bool captmade = numdwarfs<MAX_DWARFS || numtrolls<MAX_TROLLS;
     return allcapt || sincecapt > 20 || captmade && sincecapt > 10;
 }
