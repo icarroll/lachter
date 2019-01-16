@@ -20,8 +20,10 @@ add_library(minimax minimax.cc)
 add_library(alphabeta alphabeta.cc)
 add_library(rollout2 rollout2.cc)
 
+find_package(Threads)
 add_executable(thurisaz_bot thurisaz_bot.cc)
-target_link_libraries(thurisaz_bot thudbit alphabeta websockets)
+target_link_libraries(thurisaz_bot thudbit alphabeta websockets
+                      ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(thurisaz_bot PRIVATE
                            ${PROJECT_BINARY_DIR}/libwebsockets/
                            ${PROJECT_SOURCE_DIR}/extern/libwebsockets/include/)
