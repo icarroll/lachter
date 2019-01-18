@@ -175,14 +175,15 @@ int main(int numargs, char * args[]) {
 
     while (true) {
     dwarf_start:
-        cout << "start thinking" << endl;
+        // cout << "start thinking" << endl;
         brain.think_depth(4);
-        cout << "thinking done" << endl;
+        if (brain.state.gameover()) break;
+        // cout << "thinking done" << endl;
 
         mymove = brain.best_move();
         brain.do_move(mymove);
 
-        cout << "I did " << mymove << endl;
+        // cout << "I did " << mymove << endl;
 
         // SEND
         {
@@ -192,20 +193,21 @@ int main(int numargs, char * args[]) {
             mymove_ready = true;
         }
         lws_callback_on_writable(client_wsi);
-        cout << "I said " << mymove_str.str() << endl;
+        // cout << "I said " << mymove_str.str() << endl;
     troll_start:
         // RECEIVE
         {
             unique_lock<mutex> lck(theirmove_mtx);
             while (! theirmove_received) theirmove_cv.wait(lck);
-            cout << "they said " << theirmove_str << endl;
+            // cout << "they said " << theirmove_str << endl;
             stringstream(theirmove_str) >> theirmove;
             theirmove_received = false;
         }
 
         brain.do_move(theirmove);
+        if (brain.state.gameover()) break;
 
-        cout << "they did " << theirmove << endl;
+        // cout << "they did " << theirmove << endl;
     }
 
     // DISCONNECT
