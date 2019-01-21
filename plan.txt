@@ -1,7 +1,7 @@
 Reimplement Thud player
 ✓ C++(11) because of abstraction limitations in C
-✓ use game state representation amenable to machine learning (cf Giraffe)
-* decouple UI from computer player
+? use game state representation amenable to machine learning (cf Giraffe)
+✓ decouple UI from computer player
 * decouple each side's computer players from each other
 * enable easy comparison between differing versions of code/parameters
 * allow "pondering" - thinking on opponent's turn
@@ -25,15 +25,15 @@ rough task order (TEST ALL THE THINGS)
 ✓ ttable
 ✓ alpha-beta pruning
 ✓ search extension (eg for sacrifice moves)
-* UI of some sort
+✓ UI of some sort
+* fat evaluator
+* game data serialization format
+* automatic tuning of fat evaluator
 * move ordering
 * undo move
 * incremental move generation (not boost coroutine2, too bulky)
 * some kind of game tree debugging tool thingy
-* game data serialization format
 * mtd(f) (for help with ttable debugging)
-* fat evaluator
-* automatic tuning of fat evaluator
 
 some ideas for simple learning
 * remember all game states for games actually played
@@ -88,3 +88,54 @@ thoughts about variable depth search
 * if heuristic shows change, keep depth
 * if sacrifice move being considered, increase depth
 * what is null move search depth reduction?
+
+-----
+
+THUD LOCAL SEARCH THOUGHTS
+the central idea is use shallow search to prune deep search, and decompose deep search into nearly independent subgames
+
+determining hot spots is the key to this approach, and is harder than it appears at first
+
+how to determine hot spots?
+ do a shallow search, recording every capture?
+ or look at threats only?
+ or search, recording threats?
+ how to avoid considering stupid moves as hot spots?
+ perhaps only consider moves that aren't pruned by alphabeta?
+ perhaps only look at present threats?
+ but that misses proximate threats that need to be dealt with in advance, such as dwarf's traps
+
+from an actual game state, a hot spot is at least a place where a piece is in threat
+ how to search the tree and find future hot spots that aren't stupid?
+
+once hot spots are determined:
+ search each hot spot, including null move option
+ the purpose is to discover a refutation of the null move
+ if the null move is dominated, then action in the hot spot is necessary
+ is the null move is not dominated, then action is not urgent
+ if all hot spots allow null move, then perhaps the game is over?
+
+once search is done:
+ if multiple hot spots need action, search interleaves of moves to find the least bad option
+
+-----
+
+this idea is not obviously applicable to the opening moves of the game
+game start is highly symmetrical: only 4 dwarfs need be considered
+should dwarf just start with those 4 as the initial hot spot? does that do the right thing?
+no because it abstracts moves out of the hot spot, which isn't what is needed at game start
+decent opening book is probably the answer
+only a few dwarf moves make sense at the beginning of the game
+so search those 4 dwarfs to 6 ply or so, then hot spot search 6-10 more ply, replicate by symmetries (including during search to help with transpositions in the first few moves), and save the resulting ttable as the opening book
+
+-----
+
+hot spot searches need to be cached in the ttable separate from full width search and each other
+
+it's not clear how to handle searches with more than one active hot spot
+
+solution!
+treat hot spot searches as evaluating a heuristic value adjustment and just add the minimaxed heuristic change for each hot spot to the heuristic value of the starting state
+
+more sophisticated incorporations of hot spot search results are possible but this is simple and reasonable
+
