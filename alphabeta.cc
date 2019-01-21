@@ -47,6 +47,8 @@ void alphabeta_brain::think_depth(int depth) {
 
 double alphabeta_brain::alphabeta(gamestate node, int depth,
                                   double alpha, double beta, bool top) {
+    if (top) current_base_search_depth = depth;
+
     if (node.gameover()) return node.final_score();
     if (depth == 0) return node.heuristic_score();
 
