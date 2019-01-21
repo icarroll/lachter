@@ -73,7 +73,7 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
         if (top && newvalue == value) {
             numbestmoves += 1;
             uniform_int_distribution<> dist(1,numbestmoves);
-            if (dist(randgen) == 0) newbestmove = move;
+            if (dist(randgen) == 1) newbestmove = move;
         }
         else if (node.isdwarfturn) {
             if (newvalue < value) {
