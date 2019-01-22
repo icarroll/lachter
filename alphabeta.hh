@@ -1,6 +1,7 @@
 #pragma once
 
 #include <climits>
+#include <functional>
 #include <memory>
 #include <random>
 
@@ -40,6 +41,8 @@ struct alphabeta_brain {
 
     uint64_t ttable_size;
     alphabeta_entry * ttable;
+
+    function<double(gamestate)> evaluate;
 
     alphabeta_brain(gamestate newstate);
 

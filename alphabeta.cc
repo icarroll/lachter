@@ -35,6 +35,9 @@ alphabeta_brain::alphabeta_brain(gamestate newstate) : state(newstate) {
     randgen = mt19937(time(NULL));
     ttable_size = TTABLE_SIZE;
     ttable = (alphabeta_entry *) malloc(ttable_size * sizeof(alphabeta_entry));
+    evaluate = [](gamestate node) {
+        return node.heuristic_score();
+    };
 }
 
 void alphabeta_brain::iterative_deepen(int maxdepth) {
@@ -50,7 +53,7 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
     if (top) current_base_search_depth = depth;
 
     if (node.gameover()) return node.final_score();
-    if (depth == 0) return node.heuristic_score();
+    if (depth == 0) return evaluate(node);
 
     alphabeta_entry entry = ttable_get(node);
     if (entry.depth >= depth) return entry.value;
@@ -105,8 +108,17 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
     return value;
 }
 
+double alphabeta_brain::hotspot_heuristic_evaluation(gamestate node) {
+    double score = node.heuristic_score();
+
+    //TODO identify hot spots
+    //TODO search each hot spot (to current_base_search_depth ?)
+    //TODO add each hot spot's minmaxed heuristic score to the base score
+
+    return score;
+}
+
 gamemove alphabeta_brain::best_move() {
-    //cout << "found " << bestmoves.size() << " moves" << endl;
     return bestmove;
 }
 

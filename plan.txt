@@ -35,6 +35,13 @@ rough task order (TEST ALL THE THINGS)
 * some kind of game tree debugging tool thingy
 * mtd(f) (for help with ttable debugging)
 
+a smidge of an idea for smarter heuristics
+* during search, identify places where having a piece available would be good
+* nudge upward the heuristic weight of moves leaving a piece in those places
+* how to keep track of nudges?
+* how to abstract over nudges?
+* essentially saying "if your descendent looks like this, try to move there"
+
 some ideas for simple learning
 * remember all game states for games actually played
 * also shallow re-search all non-taken moves from actual-play game states to ensure they are in the ttable written to disk
