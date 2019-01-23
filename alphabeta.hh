@@ -51,6 +51,7 @@ struct alphabeta_brain {
     void think_depth(int depth);
     double alphabeta(gamestate node, int depth, double alpha, double beta,
                      bool top=false);
+    double hotspot_heuristic_evaluation(gamestate node);
 
     gamemove best_move();
 
