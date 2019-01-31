@@ -37,6 +37,8 @@ struct hotspot {
     hotspot(gamemove move);
 };
 
+vector<hotspot> merge(vector<hotspot> hotspots);
+
 struct alphabeta_brain {
     mt19937 randgen;
     gamestate state;

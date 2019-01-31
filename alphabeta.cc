@@ -44,30 +44,59 @@ hotspot::hotspot(gamemove move) {
     uint16_t line;
     if (move.from.y == move.to.y) {
         // horizontal
-        topy = move.from.y - 1;
-        boty = move.from.y + 1;
-        leftx = min(move.from.x, move.to.x) - 1;
-        rightx = max(move.from.x, move.to.x) + 1;
+        topy = min(0, move.from.y - 1);
+        boty = max(SIZE, move.from.y + 1);
+        leftx = min(0, min(move.from.x, move.to.x) - 1);
+        rightx = max(SIZE, max(move.from.x, move.to.x) + 1);
         line = VALID_BITS
                & ((LEFT_COLUMN_BIT >> (leftx-1)) - 1)
                & ~ ((LEFT_COLUMN_BIT >> (rightx-1)) - 1);
-        //TODO check for y out of bounds
-        //TODO check for blocked spaces
         for (int y=topy ; y<=boty ; y+=1) mask.data[y] |= line;
     }
     else if (move.from.x == move.to.x) {
         // vertical
-        topy = min(move.from.y, move.to.y) - 1;
-        boty = max(move.from.y, move.to.y) + 1;
-        leftx = move.from.x - 1;
-        rightx = move.from.x + 1;
+        topy = min(0, min(move.from.y, move.to.y) - 1);
+        boty = max(SIZE, max(move.from.y, move.to.y) + 1);
+        leftx = min(0, move.from.x - 1);
+        rightx = max(SIZE, move.from.x + 1);
+        line = VALID_BITS
+               & ((LEFT_COLUMN_BIT >> (leftx-1)) - 1)
+               & ~ ((LEFT_COLUMN_BIT >> (rightx-1)) - 1);
+        for (int y=topy ; y<=boty ; y+=1) mask.data[y] |= line;
     }
     else {
-        topy = min(move.from.y, move.to.y) - 1;
-        boty = max(move.from.y, move.to.y) + 1;
-        leftx = min(move.from.x, move.to.x) - 1;
-        rightx = max(move.from.x, move.to.x) + 1;
+        topy = min(0, min(move.from.y, move.to.y) - 1);
+        boty = max(SIZE, max(move.from.y, move.to.y) + 1);
+        leftx = min(0, min(move.from.x, move.to.x) - 1);
+        rightx = max(SIZE, max(move.from.x, move.to.x) + 1);
+        uint16_t fiveones = 0b1111100000000000;
+        uint16_t col_mask = VALID_BITS
+                            & ((LEFT_COLUMN_BIT >> (leftx-1)) - 1)
+                            & ~ ((LEFT_COLUMN_BIT >> (rightx-1)) - 1);
+        int x, dx;
+        if ((move.to.y - move.from.y) / (move.to.x - move.from.x) > 0) {
+            x = leftx;
+            dx = +1;
+        }
+        else {
+            x = rightx;
+            dx = -1;
+        }
+        for (int y=topy ; y<=boty ; y+=1) {
+            line = col_mask & (fiveones >> (x-1));
+            mask.data[y] |= line;
+            x += dx;
+        }
     }
+}
+
+vector<hotspot> merge(vector<hotspot> hotspots) {
+    vector<hotspot> merged = {};
+    for (hotspot & cur : hotspots) {
+        //TODO
+    }
+
+    return merged;
 }
 
 alphabeta_brain::alphabeta_brain(gamestate newstate) : state(newstate) {
