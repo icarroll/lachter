@@ -31,6 +31,12 @@ struct alphabeta_entry {
 // results in table size of ~4.5GB
 const int TTABLE_SIZE = 99999787;
 
+struct hotspot {
+    bitboard mask = {};
+
+    hotspot(gamemove move);
+};
+
 struct alphabeta_brain {
     mt19937 randgen;
     gamestate state;

@@ -46,6 +46,9 @@ target_link_libraries(test_minimax thudbit minimax)
 add_executable(test_alphabeta test_alphabeta.cc)
 target_link_libraries(test_alphabeta thudbit alphabeta)
 
+add_executable(test_hotspot test_hotspot.cc)
+target_link_libraries(test_hotspot thudbit alphabeta)
+
 add_executable(test_rollout2 test_rollout2.cc)
 target_link_libraries(test_rollout2 thudbit rollout2)
 

@@ -86,6 +86,7 @@ struct bitboard {
 };
 
 const uint16_t LEFT_COLUMN_BIT = 0b0100000000000000;
+const uint16_t VALID_BITS = 0b0111111111111111;
 
 struct gameboard {
     bitboard dwarfs;

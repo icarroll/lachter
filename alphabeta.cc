@@ -31,6 +31,45 @@ void alphabeta_entry::set_checksum() {
     checksum = compute_checksum();
 }
 
+/*
+    ###
+    #S##
+    ##\##
+     ##E#
+      ###
+*/
+hotspot::hotspot(gamemove move) {
+    int topy, boty;
+    int leftx, rightx;
+    uint16_t line;
+    if (move.from.y == move.to.y) {
+        // horizontal
+        topy = move.from.y - 1;
+        boty = move.from.y + 1;
+        leftx = min(move.from.x, move.to.x) - 1;
+        rightx = max(move.from.x, move.to.x) + 1;
+        line = VALID_BITS
+               & ((LEFT_COLUMN_BIT >> (leftx-1)) - 1)
+               & ~ ((LEFT_COLUMN_BIT >> (rightx-1)) - 1);
+        //TODO check for y out of bounds
+        //TODO check for blocked spaces
+        for (int y=topy ; y<=boty ; y+=1) mask.data[y] |= line;
+    }
+    else if (move.from.x == move.to.x) {
+        // vertical
+        topy = min(move.from.y, move.to.y) - 1;
+        boty = max(move.from.y, move.to.y) + 1;
+        leftx = move.from.x - 1;
+        rightx = move.from.x + 1;
+    }
+    else {
+        topy = min(move.from.y, move.to.y) - 1;
+        boty = max(move.from.y, move.to.y) + 1;
+        leftx = min(move.from.x, move.to.x) - 1;
+        rightx = max(move.from.x, move.to.x) + 1;
+    }
+}
+
 alphabeta_brain::alphabeta_brain(gamestate newstate) : state(newstate) {
     randgen = mt19937(time(NULL));
     ttable_size = TTABLE_SIZE;
@@ -112,6 +151,13 @@ double alphabeta_brain::hotspot_heuristic_evaluation(gamestate node) {
     double score = node.heuristic_score();
 
     //TODO identify hot spots
+    vector<hotspot> hotspots = {};
+    for (gamemove & move : node.allmoves()) {
+        if (! move.capt) continue;
+
+        hotspots.push_back(hotspot(move));
+    }
+
     //TODO search each hot spot (to current_base_search_depth ?)
     //TODO add each hot spot's minmaxed heuristic score to the base score
 
