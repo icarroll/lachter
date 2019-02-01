@@ -35,9 +35,13 @@ struct hotspot {
     bitboard mask = {};
 
     hotspot(gamemove move);
+
+    bool intersects(hotspot & that);
+    void add(hotspot & that);
 };
 
 vector<hotspot> merge(vector<hotspot> hotspots);
+vector<hotspot> merge1(hotspot & newhotspot, vector<hotspot> hotspots);
 
 struct alphabeta_brain {
     mt19937 randgen;

@@ -90,13 +90,33 @@ hotspot::hotspot(gamemove move) {
     }
 }
 
+bool hotspot::intersects(hotspot & that) {
+    for (int y=0 ; y<SIZE ; y+=1) {
+        if (this->mask.data[y] & that.mask.data[y]) return true;
+    }
+    return false;
+}
+
+void hotspot::add(hotspot & that) {
+    for (int y=0 ; y<SIZE ; y+=1) this->mask.data[y] |= that.mask.data[y];
+}
+
 vector<hotspot> merge(vector<hotspot> hotspots) {
     vector<hotspot> merged = {};
-    for (hotspot & cur : hotspots) {
-        //TODO
-    }
-
+    for (hotspot & hspot : hotspots) merged = merge1(hspot, merged);
     return merged;
+}
+
+vector<hotspot> merge1(hotspot & newhotspot, vector<hotspot> hotspots) {
+    hotspot cur = newhotspot;
+    vector<hotspot> distincts = {};
+    for (hotspot & hspot : hotspots) {
+        if (cur.intersects(hspot)) cur.add(hspot);
+        else distincts.push_back(hspot);
+    }
+    distincts.push_back(cur);
+
+    return distincts;
 }
 
 alphabeta_brain::alphabeta_brain(gamestate newstate) : state(newstate) {
@@ -179,13 +199,14 @@ double alphabeta_brain::alphabeta(gamestate node, int depth,
 double alphabeta_brain::hotspot_heuristic_evaluation(gamestate node) {
     double score = node.heuristic_score();
 
-    //TODO identify hot spots
+    // identify hot spots
     vector<hotspot> hotspots = {};
     for (gamemove & move : node.allmoves()) {
         if (! move.capt) continue;
 
         hotspots.push_back(hotspot(move));
     }
+    hotspots = merge(hotspots);
 
     //TODO search each hot spot (to current_base_search_depth ?)
     //TODO add each hot spot's minmaxed heuristic score to the base score
